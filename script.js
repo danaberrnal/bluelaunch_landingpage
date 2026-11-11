@@ -1,29 +1,50 @@
 /**
  * BLUE LAUNCH - ROCKET TEC SINALOA | PROYECTO FINAL F1025
- * Sistema interactivo, Web Audio Synth, Simulador de Física y Telemetría.
+ * Banda sonora emocional cinematográfica, Simulador de Despegue y Paracaídas (WOW),
+ * Efectos 3D Tilt, Túnel de Viento y Despiece Técnico.
  */
 
 // ============================================================================
-// 1. STARFIELD BACKGROUND (CANVAS)
+// 1. STARFIELD CON METEORITOS Y POLVO ESTELAR INTERACTIVO
 // ============================================================================
-class Starfield {
+class CosmicStarfield {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
     if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
     this.stars = [];
+    this.shootingStars = [];
+    this.stardust = [];
     this.numStars = 220;
     this.mouseX = 0;
     this.mouseY = 0;
-    this.targetMouseX = 0;
-    this.targetMouseY = 0;
 
     this.init();
     window.addEventListener('resize', () => this.resize());
     window.addEventListener('mousemove', (e) => {
-      this.targetMouseX = (e.clientX - window.innerWidth / 2) * 0.05;
-      this.targetMouseY = (e.clientY - window.innerHeight / 2) * 0.05;
+      this.mouseX = (e.clientX - window.innerWidth / 2) * 0.04;
+      this.mouseY = (e.clientY - window.innerHeight / 2) * 0.04;
+
+      // Generar partículas de polvo estelar al mover el cursor
+      if (Math.random() > 0.4) {
+        this.stardust.push({
+          x: e.clientX,
+          y: e.clientY,
+          vx: (Math.random() - 0.5) * 1.5,
+          vy: (Math.random() - 0.5) * 1.5,
+          size: Math.random() * 2.5 + 1,
+          color: Math.random() > 0.5 ? '#D4AF37' : '#38BDF8',
+          life: 1.0
+        });
+      }
     });
+
+    // Crear estrellas fugaces cada cierto tiempo
+    setInterval(() => {
+      if (Math.random() > 0.3) {
+        this.spawnShootingStar();
+      }
+    }, 3500);
   }
 
   init() {
@@ -33,8 +54,8 @@ class Starfield {
       this.stars.push({
         x: Math.random() * this.canvas.width,
         y: Math.random() * this.canvas.height,
-        size: Math.random() * 2 + 0.4,
-        speed: Math.random() * 0.4 + 0.1,
+        size: Math.random() * 2 + 0.5,
+        speed: Math.random() * 0.3 + 0.08,
         opacity: Math.random() * 0.8 + 0.2,
         twinkleSpeed: Math.random() * 0.03 + 0.01,
         color: Math.random() > 0.8 ? '#D4AF37' : (Math.random() > 0.6 ? '#38BDF8' : '#FFFFFF')
@@ -48,12 +69,21 @@ class Starfield {
     this.canvas.height = window.innerHeight;
   }
 
-  animate() {
-    this.mouseX += (this.targetMouseX - this.mouseX) * 0.05;
-    this.mouseY += (this.targetMouseY - this.mouseY) * 0.05;
+  spawnShootingStar() {
+    this.shootingStars.push({
+      x: Math.random() * this.canvas.width * 0.8,
+      y: Math.random() * this.canvas.height * 0.4,
+      length: Math.random() * 100 + 60,
+      speed: Math.random() * 12 + 10,
+      angle: Math.PI / 4 + (Math.random() - 0.5) * 0.2,
+      opacity: 1.0
+    });
+  }
 
+  animate() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // 1. Estrellas de fondo
     for (let s of this.stars) {
       s.y -= s.speed;
       if (s.y < 0) {
@@ -71,21 +101,72 @@ class Starfield {
       this.ctx.arc(drawX, drawY, s.size, 0, Math.PI * 2);
       this.ctx.fillStyle = s.color;
       this.ctx.globalAlpha = s.opacity;
-      this.ctx.shadowBlur = s.size > 1.5 ? 8 : 0;
-      this.ctx.shadowColor = s.color;
+      if (s.size > 1.6) {
+        this.ctx.shadowBlur = 8;
+        this.ctx.shadowColor = s.color;
+      }
+      this.ctx.fill();
+    }
+    this.ctx.shadowBlur = 0;
+
+    // 2. Estrellas fugaces (Meteoritos)
+    for (let i = this.shootingStars.length - 1; i >= 0; i--) {
+      const ss = this.shootingStars[i];
+      ss.x += Math.cos(ss.angle) * ss.speed;
+      ss.y += Math.sin(ss.angle) * ss.speed;
+      ss.opacity -= 0.018;
+
+      if (ss.opacity <= 0) {
+        this.shootingStars.splice(i, 1);
+        continue;
+      }
+
+      const tailX = ss.x - Math.cos(ss.angle) * ss.length;
+      const tailY = ss.y - Math.sin(ss.angle) * ss.length;
+
+      const grad = this.ctx.createLinearGradient(tailX, tailY, ss.x, ss.y);
+      grad.addColorStop(0, 'rgba(212, 175, 55, 0)');
+      grad.addColorStop(0.7, 'rgba(212, 175, 55, 0.4)');
+      grad.addColorStop(1, `rgba(255, 255, 255, ${ss.opacity})`);
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(tailX, tailY);
+      this.ctx.lineTo(ss.x, ss.y);
+      this.ctx.strokeStyle = grad;
+      this.ctx.lineWidth = 2.5;
+      this.ctx.globalAlpha = ss.opacity;
+      this.ctx.stroke();
+    }
+
+    // 3. Polvo estelar interactivo del cursor
+    for (let i = this.stardust.length - 1; i >= 0; i--) {
+      const p = this.stardust[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 0.02;
+
+      if (p.life <= 0) {
+        this.stardust.splice(i, 1);
+        continue;
+      }
+
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      this.ctx.fillStyle = p.color;
+      this.ctx.globalAlpha = p.life * 0.7;
       this.ctx.fill();
     }
 
     this.ctx.globalAlpha = 1;
-    this.ctx.shadowBlur = 0;
     requestAnimationFrame(() => this.animate());
   }
 }
 
 // ============================================================================
-// 2. WEB AUDIO ENGINE (AMBIENT SPACE MUSIC & MISSION SFX)
+// 2. BANDA SONORA EMOCIONAL DE PELÍCULA ESPACIAL (WEB AUDIO API)
+//    Estilo Hans Zimmer (Interstellar / First Man / Apollo 13)
 // ============================================================================
-class SpaceAudioEngine {
+class EmotionalCinemaAudio {
   constructor() {
     this.ctx = null;
     this.isPlaying = false;
@@ -93,9 +174,18 @@ class SpaceAudioEngine {
     this.analyser = null;
     this.visualizerCanvas = document.getElementById('audio-visualizer');
     this.visualizerCtx = this.visualizerCanvas ? this.visualizerCanvas.getContext('2d') : null;
-    this.nodes = [];
-    this.arpeggioTimer = null;
-    this.volume = 0.5;
+    this.activeNodes = [];
+    this.sequenceTimer = null;
+    this.volume = 0.55;
+    this.chordIndex = 0;
+
+    // Progresión de acordes emotivos (D menor - Bb Mayor - F Mayor - C Mayor)
+    this.chords = [
+      { name: 'Dm9', root: 73.42, notes: [146.83, 220.0, 261.63, 329.63, 440.0] },      // D3, A3, C4, E4, A4
+      { name: 'Bbmaj7', root: 58.27, notes: [116.54, 174.61, 233.08, 293.66, 349.23] },  // Bb2, F3, Bb3, D4, F4
+      { name: 'Fsus2', root: 87.31, notes: [174.61, 261.63, 349.23, 392.00, 523.25] },   // F3, C4, F4, G4, C5
+      { name: 'C/E', root: 65.41, notes: [130.81, 196.00, 261.63, 329.63, 392.00] }      // C3, G3, C4, E4, G4
+    ];
 
     this.initVisualizer();
   }
@@ -120,13 +210,13 @@ class SpaceAudioEngine {
     }
   }
 
-  toggleMusic() {
+  toggle() {
     this.init();
     if (this.isPlaying) {
-      this.stopAmbient();
+      this.stop();
       return false;
     } else {
-      this.startAmbient();
+      this.start();
       return true;
     }
   }
@@ -138,158 +228,150 @@ class SpaceAudioEngine {
     }
   }
 
-  startAmbient() {
+  start() {
     if (this.isPlaying) return;
     this.isPlaying = true;
-
-    // 1. Sub-Bass Cosmic Drone (55 Hz - A1 / 73.4 Hz - D2)
-    const baseFreqs = [55, 73.4, 110];
-    baseFreqs.forEach(freq => {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const filter = this.ctx.createBiquadFilter();
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(160, this.ctx.currentTime);
-
-      gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(this.masterGain);
-
-      osc.start();
-      this.nodes.push(osc, gain, filter);
-    });
-
-    // 2. Warm Pad Chord (D Minor: D3, F3, A3, C4, E4)
-    const padNotes = [146.83, 174.61, 220.00, 261.63, 329.63];
-    padNotes.forEach((freq, idx) => {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const panner = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
-      const filter = this.ctx.createBiquadFilter();
-
-      osc.type = idx % 2 === 0 ? 'sine' : 'sawtooth';
-      osc.frequency.setValueAtTime(freq + (Math.random() - 0.5) * 1.5, this.ctx.currentTime);
-
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(350, this.ctx.currentTime);
-      filter.Q.setValueAtTime(2, this.ctx.currentTime);
-
-      gain.gain.setValueAtTime(0.06, this.ctx.currentTime);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      if (panner) {
-        panner.pan.setValueAtTime((idx - 2) * 0.4, this.ctx.currentTime);
-        gain.connect(panner);
-        panner.connect(this.masterGain);
-        this.nodes.push(panner);
-      } else {
-        gain.connect(this.masterGain);
-      }
-
-      osc.start();
-      this.nodes.push(osc, gain, filter);
-    });
-
-    // 3. Subtle Cosmic Wind (Filtered Pink Noise)
-    const bufferSize = this.ctx.sampleRate * 2;
-    const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
-    let b0 = 0, b1 = 0, b2 = 0;
-    for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1;
-      b0 = 0.99886 * b0 + white * 0.0555179;
-      b1 = 0.99332 * b1 + white * 0.0750759;
-      b2 = 0.96900 * b2 + white * 0.1538520;
-      output[i] = (b0 + b1 + b2) * 0.05;
-    }
-    const noiseSource = this.ctx.createBufferSource();
-    noiseSource.buffer = noiseBuffer;
-    noiseSource.loop = true;
-
-    const noiseFilter = this.ctx.createBiquadFilter();
-    noiseFilter.type = 'bandpass';
-    noiseFilter.frequency.setValueAtTime(320, this.ctx.currentTime);
-    noiseFilter.Q.setValueAtTime(3, this.ctx.currentTime);
-
-    const noiseGain = this.ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.04, this.ctx.currentTime);
-
-    noiseSource.connect(noiseFilter);
-    noiseFilter.connect(noiseGain);
-    noiseGain.connect(this.masterGain);
-    noiseSource.start();
-    this.nodes.push(noiseSource, noiseFilter, noiseGain);
-
-    // 4. Procedural Celestial Arpeggiator (Pentatonic Twinkles)
-    const scale = [440, 523.25, 587.33, 659.25, 783.99, 880, 1046.5];
-    const playArpNote = () => {
-      if (!this.isPlaying || !this.ctx) return;
-      const noteFreq = scale[Math.floor(Math.random() * scale.length)];
-      const osc = this.ctx.createOscillator();
-      const noteGain = this.ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(noteFreq, this.ctx.currentTime);
-
-      noteGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
-      noteGain.gain.exponentialRampToValueAtTime(0.05, this.ctx.currentTime + 0.1);
-      noteGain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 1.8);
-
-      osc.connect(noteGain);
-      noteGain.connect(this.masterGain);
-
-      osc.start();
-      osc.stop(this.ctx.currentTime + 2.0);
-
-      this.arpeggioTimer = setTimeout(playArpNote, 800 + Math.random() * 1600);
-    };
-
-    playArpNote();
+    this.chordIndex = 0;
+    this.playChordCycle();
   }
 
-  stopAmbient() {
+  playChordCycle() {
+    if (!this.isPlaying || !this.ctx) return;
+
+    const chord = this.chords[this.chordIndex];
+    const duration = 4.8; // Duración de cada acorde en segundos
+    const now = this.ctx.currentTime;
+
+    // 1. Sub-Bajo Cinematográfico Cálido
+    const bassOsc = this.ctx.createOscillator();
+    const bassGain = this.ctx.createGain();
+    const bassFilter = this.ctx.createBiquadFilter();
+
+    bassOsc.type = 'triangle';
+    bassOsc.frequency.setValueAtTime(chord.root, now);
+
+    bassFilter.type = 'lowpass';
+    bassFilter.frequency.setValueAtTime(140, now);
+
+    bassGain.gain.setValueAtTime(0.001, now);
+    bassGain.gain.linearRampToValueAtTime(0.24, now + 1.2);
+    bassGain.gain.setValueAtTime(0.24, now + duration - 1.0);
+    bassGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    bassOsc.connect(bassFilter);
+    bassFilter.connect(bassGain);
+    bassGain.connect(this.masterGain);
+
+    bassOsc.start(now);
+    bassOsc.stop(now + duration + 0.1);
+    this.activeNodes.push(bassOsc, bassGain, bassFilter);
+
+    // 2. Colchón de Órgano / Cuerdas Espaciales (Interstellar Pipe Swell)
+    chord.notes.forEach((freq, idx) => {
+      const padOsc = this.ctx.createOscillator();
+      const padGain = this.ctx.createGain();
+      const padFilter = this.ctx.createBiquadFilter();
+
+      padOsc.type = idx % 2 === 0 ? 'sine' : 'sawtooth';
+      // Ligero detune para efecto orquestal
+      padOsc.frequency.setValueAtTime(freq + (Math.random() - 0.5) * 1.2, now);
+
+      padFilter.type = 'lowpass';
+      padFilter.frequency.setValueAtTime(280, now);
+      padFilter.frequency.linearRampToValueAtTime(520, now + duration * 0.5);
+      padFilter.frequency.linearRampToValueAtTime(280, now + duration);
+
+      padGain.gain.setValueAtTime(0.001, now);
+      padGain.gain.linearRampToValueAtTime(0.065, now + 1.5);
+      padGain.gain.setValueAtTime(0.065, now + duration - 0.8);
+      padGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      padOsc.connect(padFilter);
+      padFilter.connect(padGain);
+      padGain.connect(this.masterGain);
+
+      padOsc.start(now);
+      padOsc.stop(now + duration + 0.1);
+      this.activeNodes.push(padOsc, padGain, padFilter);
+    });
+
+    // 3. Arpegio Emocional de Piano / Celesta Espacial
+    const arpNotes = [...chord.notes, chord.notes[1] * 2, chord.notes[2] * 2];
+    const stepTime = duration / arpNotes.length;
+    arpNotes.forEach((noteFreq, i) => {
+      const noteTime = now + i * stepTime;
+      const arpOsc = this.ctx.createOscillator();
+      const arpGain = this.ctx.createGain();
+
+      arpOsc.type = 'sine';
+      arpOsc.frequency.setValueAtTime(noteFreq, noteTime);
+
+      arpGain.gain.setValueAtTime(0.001, noteTime);
+      arpGain.gain.exponentialRampToValueAtTime(0.045, noteTime + 0.08);
+      arpGain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 1.5);
+
+      arpOsc.connect(arpGain);
+      arpGain.connect(this.masterGain);
+
+      arpOsc.start(noteTime);
+      arpOsc.stop(noteTime + 1.6);
+      this.activeNodes.push(arpOsc, arpGain);
+    });
+
+    // Avanzar al siguiente acorde
+    this.chordIndex = (this.chordIndex + 1) % this.chords.length;
+    this.sequenceTimer = setTimeout(() => {
+      this.playChordCycle();
+    }, (duration - 0.3) * 1000);
+  }
+
+  stop() {
     this.isPlaying = false;
-    clearTimeout(this.arpeggioTimer);
-    this.nodes.forEach(node => {
+    clearTimeout(this.sequenceTimer);
+    this.activeNodes.forEach(n => {
       try {
-        if (node.stop) node.stop();
-        if (node.disconnect) node.disconnect();
+        if (n.stop) n.stop();
+        if (n.disconnect) n.disconnect();
       } catch (e) {}
     });
-    this.nodes = [];
+    this.activeNodes = [];
   }
 
-  // Countdown Beep (Precision Telemetry)
-  playBeep(frequency = 880, duration = 0.15) {
+  // Sonido de Beep de Telemetría
+  playBeep(frequency = 950, duration = 0.12) {
     this.init();
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-
     osc.type = 'sine';
     osc.frequency.setValueAtTime(frequency, this.ctx.currentTime);
-
     gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-
     osc.connect(gain);
     gain.connect(this.ctx.destination);
-
     osc.start();
     osc.stop(this.ctx.currentTime + duration);
   }
 
-  // Rocket Ignition Sound (Sub-bass rumble + noise blast)
-  playIgnitionSound() {
+  // Sonido de Pop de Apertura de Paracaídas (Eyección)
+  playParachutePop() {
     this.init();
-    // 1. Noise blast
-    const bufferSize = this.ctx.sampleRate * 3;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.18);
+  }
+
+  // Rugido de Motor de Cohete a Escala
+  playRocketBurn() {
+    this.init();
+    const bufferSize = this.ctx.sampleRate * 2.5;
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
@@ -300,39 +382,21 @@ class SpaceAudioEngine {
 
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(180, this.ctx.currentTime);
-    filter.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 1.2);
-    filter.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 3.0);
+    filter.frequency.setValueAtTime(250, this.ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.8);
+    filter.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 2.5);
 
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.01, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.4, this.ctx.currentTime + 0.6);
-    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 3.0);
+    gain.gain.exponentialRampToValueAtTime(0.35, this.ctx.currentTime + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 2.5);
 
     noise.connect(filter);
     filter.connect(gain);
     gain.connect(this.ctx.destination);
     noise.start();
-
-    // 2. Sub Rumble Oscillator
-    const rumble = this.ctx.createOscillator();
-    const rumbleGain = this.ctx.createGain();
-    rumble.type = 'sawtooth';
-    rumble.frequency.setValueAtTime(45, this.ctx.currentTime);
-    rumble.frequency.exponentialRampToValueAtTime(75, this.ctx.currentTime + 1.0);
-    rumble.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 3.0);
-
-    rumbleGain.gain.setValueAtTime(0.01, this.ctx.currentTime);
-    rumbleGain.gain.linearRampToValueAtTime(0.3, this.ctx.currentTime + 0.4);
-    rumbleGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 3.0);
-
-    rumble.connect(rumbleGain);
-    rumbleGain.connect(this.ctx.destination);
-    rumble.start();
-    rumble.stop(this.ctx.currentTime + 3.0);
   }
 
-  // UI Telemetry Click
   playClick() {
     if (!this.ctx) return;
     try {
@@ -341,7 +405,7 @@ class SpaceAudioEngine {
       osc.type = 'sine';
       osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.04);
-      gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
       osc.connect(gain);
       gain.connect(this.ctx.destination);
@@ -350,7 +414,6 @@ class SpaceAudioEngine {
     } catch(e) {}
   }
 
-  // Audio Visualizer Canvas
   initVisualizer() {
     if (!this.visualizerCanvas || !this.visualizerCtx) return;
     const draw = () => {
@@ -362,7 +425,6 @@ class SpaceAudioEngine {
       const gap = 3;
 
       if (!this.isPlaying || !this.analyser) {
-        // Idle bars
         this.visualizerCtx.fillStyle = 'rgba(212, 175, 55, 0.3)';
         for (let i = 0; i < numBars; i++) {
           this.visualizerCtx.fillRect(i * (barWidth + gap), 14, barWidth, 3);
@@ -385,24 +447,834 @@ class SpaceAudioEngine {
   }
 }
 
-// Global Audio Engine Instance
-const spaceAudio = new SpaceAudioEngine();
+const emotionalAudio = new EmotionalCinemaAudio();
 
 // ============================================================================
-// 3. COUNTDOWN TIMER & LAUNCH SEQUENCE (T-10s)
+// 3. EFECTO WOW: 3D TILT CARDS CON REFLEJO HOLOGRÁFICO
 // ============================================================================
-class CountdownTimer {
+function init3DTiltCards() {
+  const cards = document.querySelectorAll('.tilt-card');
+  cards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const rotateX = ((y - centerY) / centerY) * -9; // Max 9 deg
+      const rotateY = ((x - centerX) / centerX) * 9;
+
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+    });
+  });
+}
+
+// ============================================================================
+// 4. SIMULADOR WOW DE DESPEGUE, APOGEO Y PARACAÍDAS DEL COHETE PEQUEÑO
+// ============================================================================
+class SmallRocketLaunchSimulator {
+  constructor(canvasId) {
+    this.canvas = document.getElementById(canvasId);
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+
+    // Controls
+    this.motorSelect = document.getElementById('sim-motor-class');
+    this.massSlider = document.getElementById('sim-rocket-mass');
+    this.massVal = document.getElementById('val-rocket-mass');
+    this.chuteSlider = document.getElementById('sim-chute-size');
+    this.chuteVal = document.getElementById('val-chute-size');
+
+    // Telemetry Elements
+    this.telAlt = document.getElementById('tel-wow-alt');
+    this.telVel = document.getElementById('tel-wow-vel');
+    this.telAcc = document.getElementById('tel-wow-acc');
+    this.telTime = document.getElementById('tel-wow-time');
+    this.hudPhase = document.getElementById('sim-hud-phase');
+    this.hudAlt = document.getElementById('sim-hud-alt');
+
+    this.btnLaunch = document.getElementById('btn-wow-launch');
+    this.btnReset = document.getElementById('btn-wow-reset');
+
+    // State
+    this.state = 'PAD'; // 'PAD', 'BOOST', 'COAST', 'APOGEE', 'DESCENT', 'LANDED'
+    this.altitude = 0; // meters
+    this.velocity = 0; // m/s
+    this.acceleration = 0; // m/s^2
+    this.flightTime = 0; // s
+    this.maxAltitude = 0;
+    this.particles = [];
+    this.smokePuffs = [];
+    this.parachuteAngle = 0;
+
+    this.bind();
+    this.draw();
+  }
+
+  bind() {
+    if (this.massSlider && this.massVal) {
+      this.massSlider.addEventListener('input', () => {
+        this.massVal.textContent = `${this.massSlider.value} g`;
+      });
+    }
+
+    if (this.chuteSlider && this.chuteVal) {
+      this.chuteSlider.addEventListener('input', () => {
+        this.chuteVal.textContent = `${this.chuteSlider.value} cm`;
+      });
+    }
+
+    if (this.btnLaunch) {
+      this.btnLaunch.addEventListener('click', () => {
+        emotionalAudio.playClick();
+        if (this.state === 'PAD' || this.state === 'LANDED') {
+          this.launch();
+        }
+      });
+    }
+
+    if (this.btnReset) {
+      this.btnReset.addEventListener('click', () => {
+        emotionalAudio.playClick();
+        this.reset();
+      });
+    }
+  }
+
+  launch() {
+    this.state = 'BOOST';
+    this.altitude = 0;
+    this.velocity = 0;
+    this.acceleration = 0;
+    this.flightTime = 0;
+    this.maxAltitude = 0;
+    this.particles = [];
+    this.smokePuffs = [];
+
+    if (this.btnLaunch) {
+      this.btnLaunch.disabled = true;
+      this.btnLaunch.innerHTML = '🚀 ¡EN VUELO!';
+    }
+
+    // Sonido de encendido del motor
+    emotionalAudio.playRocketBurn();
+    this.lastTime = performance.now();
+    this.loop();
+  }
+
+  reset() {
+    this.state = 'PAD';
+    this.altitude = 0;
+    this.velocity = 0;
+    this.acceleration = 0;
+    this.flightTime = 0;
+    this.particles = [];
+    this.smokePuffs = [];
+
+    if (this.btnLaunch) {
+      this.btnLaunch.disabled = false;
+      this.btnLaunch.innerHTML = '🚀 Despegar Cohete Pequeño';
+    }
+
+    this.updateHUD();
+    this.draw();
+  }
+
+  loop() {
+    if (this.state === 'LANDED') return;
+
+    const now = performance.now();
+    const dt = Math.min((now - (this.lastTime || now)) / 1000, 0.05);
+    this.lastTime = now;
+
+    this.updatePhysics(dt);
+    this.draw();
+    this.updateHUD();
+
+    requestAnimationFrame(() => this.loop());
+  }
+
+  updatePhysics(dt) {
+    this.flightTime += dt;
+
+    // Configuración según motor elegido
+    // Clase D: Empuje medio 14 N durante 1.8 s
+    // Clase E: Empuje medio 24 N durante 2.3 s
+    const motorType = this.motorSelect ? this.motorSelect.value : 'D';
+    const burnDuration = motorType === 'E' ? 2.3 : 1.8;
+    const averageThrust = motorType === 'E' ? 24 : 14;
+
+    const totalMassKg = parseFloat(this.massSlider ? this.massSlider.value : 380) / 1000;
+    const g = 9.81;
+
+    let thrust = 0;
+    if (this.flightTime <= burnDuration) {
+      this.state = 'BOOST';
+      thrust = averageThrust;
+
+      // Partículas intensas de fuego y humo
+      for (let i = 0; i < 4; i++) {
+        this.particles.push({
+          x: (Math.random() - 0.5) * 8,
+          y: Math.random() * 6,
+          vx: (Math.random() - 0.5) * 15,
+          vy: Math.random() * 60 + 30,
+          size: Math.random() * 8 + 4,
+          life: 1.0,
+          color: Math.random() > 0.4 ? '#f59e0b' : '#ef4444'
+        });
+      }
+    } else if (this.velocity > 0) {
+      this.state = 'COAST';
+      thrust = 0;
+    } else if (this.state === 'COAST' && this.velocity <= 0) {
+      // ¡ALCANZÓ EL APOGEO! ACTIVAR PARACAÍDAS
+      this.state = 'APOGEE';
+      this.maxAltitude = this.altitude;
+      emotionalAudio.playParachutePop();
+
+      // Nube de humo de eyección pirotécnica
+      for (let i = 0; i < 20; i++) {
+        this.smokePuffs.push({
+          x: (Math.random() - 0.5) * 20,
+          y: (Math.random() - 0.5) * 20,
+          vx: (Math.random() - 0.5) * 30,
+          vy: (Math.random() - 0.5) * 30,
+          size: Math.random() * 12 + 6,
+          life: 1.0
+        });
+      }
+
+      setTimeout(() => {
+        if (this.state === 'APOGEE') this.state = 'DESCENT';
+      }, 350);
+    }
+
+    // Fuerzas aerodinámicas
+    // En descenso con paracaídas: F_arrastre = 0.5 * rho * v^2 * Cd_paracaidas * Area
+    const chuteDiameterM = parseFloat(this.chuteSlider ? this.chuteSlider.value : 45) / 100;
+    const chuteArea = Math.PI * Math.pow(chuteDiameterM / 2, 2);
+    const Cd = (this.state === 'DESCENT' || this.state === 'APOGEE') ? 1.5 : 0.35;
+    const effectiveArea = (this.state === 'DESCENT' || this.state === 'APOGEE') ? chuteArea : 0.002;
+
+    const rho = 1.2; // kg/m^3
+    const dragForce = 0.5 * rho * Math.pow(this.velocity, 2) * Cd * effectiveArea * Math.sign(this.velocity);
+    const weightForce = totalMassKg * g;
+
+    const netForce = thrust - dragForce - weightForce;
+    this.acceleration = netForce / totalMassKg;
+
+    // Si ya está descendiendo con paracaídas, velocidad terminal controlada
+    if (this.state === 'DESCENT') {
+      const terminalVelocity = -Math.sqrt((2 * weightForce) / (rho * Cd * effectiveArea));
+      this.velocity += (terminalVelocity - this.velocity) * 4 * dt;
+    } else {
+      this.velocity += this.acceleration * dt;
+    }
+
+    this.altitude += this.velocity * dt;
+
+    if (this.altitude > this.maxAltitude) {
+      this.maxAltitude = this.altitude;
+    }
+
+    // Aterrizaje
+    if (this.altitude <= 0 && this.flightTime > 1.0) {
+      this.altitude = 0;
+      this.velocity = 0;
+      this.acceleration = 0;
+      this.state = 'LANDED';
+      emotionalAudio.playBeep(1200, 0.3);
+
+      if (this.btnLaunch) {
+        this.btnLaunch.disabled = false;
+        this.btnLaunch.innerHTML = '🔄 Lanzar Nuevamente';
+      }
+    }
+
+    // Actualizar partículas
+    for (let p of this.particles) {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.size += dt * 10;
+      p.life -= dt * 2.5;
+    }
+    this.particles = this.particles.filter(p => p.life > 0);
+
+    for (let s of this.smokePuffs) {
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+      s.size += dt * 12;
+      s.life -= dt * 1.5;
+    }
+    this.smokePuffs = this.smokePuffs.filter(s => s.life > 0);
+
+    this.parachuteAngle = Math.sin(this.flightTime * 3) * 0.15;
+  }
+
+  updateHUD() {
+    if (this.telAlt) this.telAlt.textContent = `${this.altitude.toFixed(1)} m`;
+    if (this.telVel) this.telVel.textContent = `${this.velocity.toFixed(1)} m/s`;
+    if (this.telAcc) this.telAcc.textContent = `${(this.acceleration / 9.81).toFixed(1)} g`;
+    if (this.telTime) this.telTime.textContent = `${this.flightTime.toFixed(1)} s`;
+
+    if (this.hudAlt) this.hudAlt.textContent = `ALT: ${this.altitude.toFixed(1)}m (MAX: ${this.maxAltitude.toFixed(1)}m)`;
+
+    if (this.hudPhase) {
+      const phases = {
+        'PAD': 'EN PLATAFORMA (ESPERA)',
+        'BOOST': '🔥 FASE DE EMPUJE (MOTOR ACTIVO)',
+        'COAST': '🚀 VUELO INERCIAL (SUBIENDO)',
+        'APOGEE': '⭐ APOGEO (EYECCIÓN)',
+        'DESCENT': '🪂 DESCENSO CON PARACAÍDAS',
+        'LANDED': '✅ RECUPERADO CON ÉXITO'
+      };
+      this.hudPhase.textContent = phases[this.state] || this.state;
+    }
+  }
+
+  draw() {
+    const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+    const h = this.canvas.height = 480;
+
+    // Cielo diurno con transición de altitud (Cielo azul despejado de campo de pruebas)
+    const skyGrad = this.ctx.createLinearGradient(0, 0, 0, h);
+    if (this.altitude < 100) {
+      skyGrad.addColorStop(0, '#1a365d');
+      skyGrad.addColorStop(0.7, '#2b6cb0');
+      skyGrad.addColorStop(1, '#63b3ed');
+    } else {
+      skyGrad.addColorStop(0, '#0c1a30');
+      skyGrad.addColorStop(0.8, '#1a365d');
+      skyGrad.addColorStop(1, '#2b6cb0');
+    }
+    this.ctx.fillStyle = skyGrad;
+    this.ctx.fillRect(0, 0, w, h);
+
+    // Suelo / Pasto de la zona de lanzamiento
+    const groundHeight = 70;
+    const groundY = h - groundHeight;
+
+    // Desplazamiento de cámara: si el cohete sube, el suelo baja
+    const camOffset = Math.min(this.altitude * 1.5, 300);
+
+    // Dibujar suelo
+    this.ctx.fillStyle = '#22543d';
+    this.ctx.fillRect(0, groundY + camOffset, w, groundHeight + 200);
+
+    // Línea de horizonte de pasto
+    this.ctx.fillStyle = '#276749';
+    this.ctx.fillRect(0, groundY + camOffset, w, 8);
+
+    // Torre / Riel de lanzamiento
+    const padX = w / 2;
+    const padBaseY = groundY + camOffset;
+
+    this.ctx.strokeStyle = '#D4AF37';
+    this.ctx.lineWidth = 2.5;
+    this.ctx.beginPath();
+    this.ctx.moveTo(padX, padBaseY);
+    this.ctx.lineTo(padX, padBaseY - 80);
+    this.ctx.stroke();
+
+    // Base trípode
+    this.ctx.beginPath();
+    this.ctx.moveTo(padX - 25, padBaseY);
+    this.ctx.lineTo(padX, padBaseY - 15);
+    this.ctx.lineTo(padX + 25, padBaseY);
+    this.ctx.stroke();
+
+    // Posición del cohete en pantalla
+    // Cohete sube en pantalla hasta la mitad, luego la cámara lo sigue
+    let rocketDrawY = padBaseY - 30;
+    if (this.altitude < 150) {
+      rocketDrawY = padBaseY - 30 - this.altitude * 1.6;
+    } else {
+      rocketDrawY = h / 2 - 40;
+    }
+
+    // Partículas de escape en el suelo
+    for (let p of this.particles) {
+      this.ctx.beginPath();
+      this.ctx.arc(padX + p.x, rocketDrawY + 35 + p.y, p.size, 0, Math.PI * 2);
+      this.ctx.fillStyle = p.color;
+      this.ctx.globalAlpha = p.life * 0.8;
+      this.ctx.fill();
+    }
+
+    // Humo de eyección
+    for (let s of this.smokePuffs) {
+      this.ctx.beginPath();
+      this.ctx.arc(padX + s.x, rocketDrawY + s.y, s.size, 0, Math.PI * 2);
+      this.ctx.fillStyle = '#CBD5E1';
+      this.ctx.globalAlpha = s.life * 0.7;
+      this.ctx.fill();
+    }
+    this.ctx.globalAlpha = 1;
+
+    // DIBUJAR COHETE PEQUEÑO BLUE LAUNCH
+    this.ctx.save();
+    this.ctx.translate(padX, rocketDrawY);
+
+    if (this.state === 'DESCENT') {
+      this.ctx.rotate(this.parachuteAngle);
+
+      // PARACAÍDAS DESPLEGADO (WOW)
+      // Cúpula semiesférica de nylon ripstop naranja y oro
+      this.ctx.save();
+      this.ctx.translate(0, -65);
+
+      // Cúpula
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, 36, Math.PI, 0);
+      this.ctx.fillStyle = '#F59E0B';
+      this.ctx.fill();
+      this.ctx.lineWidth = 2;
+      this.ctx.strokeStyle = '#D4AF37';
+      this.ctx.stroke();
+
+      // Franjas de color en la cúpula
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, 36, Math.PI * 1.25, Math.PI * 1.75);
+      this.ctx.fillStyle = '#FFFFFF';
+      this.ctx.fill();
+
+      // Cuerdas de suspensión (Shroud lines)
+      this.ctx.strokeStyle = '#FFFFFF';
+      this.ctx.lineWidth = 1;
+      this.ctx.beginPath();
+      this.ctx.moveTo(-36, 0);
+      this.ctx.lineTo(0, 45);
+      this.ctx.moveTo(-18, 0);
+      this.ctx.lineTo(0, 45);
+      this.ctx.moveTo(18, 0);
+      this.ctx.lineTo(0, 45);
+      this.ctx.moveTo(36, 0);
+      this.ctx.lineTo(0, 45);
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+
+    // Cuerpo del Cohete a Escala
+    // Fuselaje cilíndrico
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.strokeStyle = '#0D183E';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.fillRect(-7, -20, 14, 50);
+    this.ctx.strokeRect(-7, -20, 14, 50);
+
+    // Franja Azul Profundo oficial
+    this.ctx.fillStyle = '#0D183E';
+    this.ctx.fillRect(-7, -5, 14, 12);
+
+    // Ojiva dorada (Nose Cone)
+    this.ctx.fillStyle = '#D4AF37';
+    this.ctx.beginPath();
+    this.ctx.moveTo(-7, -20);
+    this.ctx.quadraticCurveTo(0, -42, 0, -42);
+    this.ctx.quadraticCurveTo(0, -42, 7, -20);
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    // Aletas estabilizadoras
+    this.ctx.fillStyle = '#0D183E';
+    // Aleta izquierda
+    this.ctx.beginPath();
+    this.ctx.moveTo(-7, 18);
+    this.ctx.lineTo(-18, 32);
+    this.ctx.lineTo(-7, 28);
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    // Aleta derecha
+    this.ctx.beginPath();
+    this.ctx.moveTo(7, 18);
+    this.ctx.lineTo(18, 32);
+    this.ctx.lineTo(7, 28);
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    // Tobera / Motor
+    this.ctx.fillStyle = '#475569';
+    this.ctx.fillRect(-4, 30, 8, 5);
+
+    // Llama activa si está en fase BOOST
+    if (this.state === 'BOOST') {
+      const flameH = 20 + Math.random() * 15;
+      this.ctx.beginPath();
+      this.ctx.moveTo(-5, 35);
+      this.ctx.lineTo(0, 35 + flameH);
+      this.ctx.lineTo(5, 35);
+      this.ctx.fillStyle = '#f59e0b';
+      this.ctx.shadowBlur = 15;
+      this.ctx.shadowColor = '#f59e0b';
+      this.ctx.fill();
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(-2, 35);
+      this.ctx.lineTo(0, 35 + flameH * 0.6);
+      this.ctx.lineTo(2, 35);
+      this.ctx.fillStyle = '#ffffff';
+      this.ctx.fill();
+      this.ctx.shadowBlur = 0;
+    }
+
+    this.ctx.restore();
+  }
+}
+
+// ============================================================================
+// 5. TÚNEL DE VIENTO INTERACTIVO (AERODYNAMICS WOW)
+// ============================================================================
+class AerodynamicWindTunnel {
+  constructor(canvasId) {
+    this.canvas = document.getElementById(canvasId);
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+
+    this.speedSlider = document.getElementById('wt-speed');
+    this.speedVal = document.getElementById('val-wt-speed');
+    this.angleSlider = document.getElementById('wt-angle');
+    this.angleVal = document.getElementById('val-wt-angle');
+
+    this.streamlines = [];
+    this.numLines = 45;
+
+    this.init();
+    this.bind();
+  }
+
+  init() {
+    this.resize();
+    this.streamlines = [];
+    for (let i = 0; i < this.numLines; i++) {
+      this.streamlines.push({
+        x: Math.random() * this.canvas.width,
+        y: (i / this.numLines) * this.canvas.height,
+        baseY: (i / this.numLines) * this.canvas.height,
+        speed: Math.random() * 2 + 4,
+        length: Math.random() * 35 + 20
+      });
+    }
+    this.animate();
+  }
+
+  resize() {
+    this.canvas.width = this.canvas.parentElement.clientWidth;
+    this.canvas.height = 360;
+  }
+
+  bind() {
+    if (this.speedSlider && this.speedVal) {
+      this.speedSlider.addEventListener('input', () => {
+        this.speedVal.textContent = `${this.speedSlider.value} m/s`;
+      });
+    }
+    if (this.angleSlider && this.angleVal) {
+      this.angleSlider.addEventListener('input', () => {
+        this.angleVal.textContent = `${this.angleSlider.value}°`;
+      });
+    }
+    window.addEventListener('resize', () => this.resize());
+  }
+
+  animate() {
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    const windSpeedMul = parseFloat(this.speedSlider ? this.speedSlider.value : 20) / 10;
+    const angleDeg = parseFloat(this.angleSlider ? this.angleSlider.value : 0);
+    const angleRad = (angleDeg * Math.PI) / 180;
+
+    this.ctx.fillStyle = '#060A1A';
+    this.ctx.fillRect(0, 0, w, h);
+
+    const rocketX = w / 2;
+    const rocketY = h / 2;
+
+    // Dibujar líneas de corriente
+    for (let line of this.streamlines) {
+      line.x += line.speed * windSpeedMul;
+      if (line.x > w) {
+        line.x = 0;
+      }
+
+      // Desviación aerodinámica alrededor del cohete
+      const dx = line.x - rocketX;
+      const distY = line.baseY - rocketY;
+      let curveOffset = 0;
+
+      // Si está cerca del cohete, la línea de flujo se curva
+      if (Math.abs(dx) < 90 && Math.abs(distY) < 55) {
+        const factor = (1 - Math.abs(dx) / 90);
+        curveOffset = Math.sign(distY || 1) * factor * 22;
+      }
+
+      const drawY = line.baseY + curveOffset;
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(line.x - line.length, drawY);
+      this.ctx.lineTo(line.x, drawY);
+
+      // Color de presión aerodinámica
+      const isHighPressure = Math.abs(dx) < 60 && Math.abs(distY) < 30;
+      this.ctx.strokeStyle = isHighPressure ? '#F59E0B' : '#38BDF8';
+      this.ctx.lineWidth = isHighPressure ? 2 : 1.2;
+      this.ctx.globalAlpha = 0.65;
+      this.ctx.stroke();
+    }
+    this.ctx.globalAlpha = 1;
+
+    // Dibujar Cohete en el Túnel con ángulo de ataque
+    this.ctx.save();
+    this.ctx.translate(rocketX, rocketY);
+    this.ctx.rotate(-Math.PI / 2 + angleRad); // Horizontal en túnel
+
+    // Fuselaje
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.strokeStyle = '#D4AF37';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.fillRect(-10, -35, 20, 70);
+    this.ctx.strokeRect(-10, -35, 20, 70);
+
+    // Ojiva
+    this.ctx.fillStyle = '#D4AF37';
+    this.ctx.beginPath();
+    this.ctx.moveTo(-10, -35);
+    this.ctx.quadraticCurveTo(0, -65, 0, -65);
+    this.ctx.quadraticCurveTo(0, -65, 10, -35);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    // Aletas
+    this.ctx.fillStyle = '#0D183E';
+    this.ctx.beginPath();
+    this.ctx.moveTo(-10, 15);
+    this.ctx.lineTo(-26, 35);
+    this.ctx.lineTo(-10, 30);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(10, 15);
+    this.ctx.lineTo(26, 35);
+    this.ctx.lineTo(10, 30);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    this.ctx.restore();
+
+    requestAnimationFrame(() => this.animate());
+  }
+}
+
+// ============================================================================
+// 6. DESPIECE EXPLOSIVO DEL COHETE (EXPLODED VIEW INSPECTOR)
+// ============================================================================
+class ExplodedRocketInspector {
+  constructor(canvasId) {
+    this.canvas = document.getElementById(canvasId);
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.exploded = true;
+    this.btnToggle = document.getElementById('btn-toggle-exploded');
+    this.selectedPart = 'all';
+
+    this.parts = document.querySelectorAll('.part-item');
+    this.bind();
+    this.draw();
+  }
+
+  bind() {
+    if (this.btnToggle) {
+      this.btnToggle.addEventListener('click', () => {
+        emotionalAudio.playClick();
+        this.exploded = !this.exploded;
+        this.btnToggle.textContent = this.exploded ? '🔧 Modo Ensamblado' : '💥 Modo Despiece (Exploded)';
+        this.draw();
+      });
+    }
+
+    this.parts.forEach(p => {
+      p.addEventListener('click', () => {
+        emotionalAudio.playClick();
+        this.parts.forEach(item => item.classList.remove('active'));
+        p.classList.add('active');
+        this.selectedPart = p.getAttribute('data-part');
+        this.draw();
+      });
+    });
+  }
+
+  draw() {
+    const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+    const h = this.canvas.height = 440;
+
+    this.ctx.clearRect(0, 0, w, h);
+
+    const centerX = w / 2;
+    // Si está explotado, los componentes se separan verticalmente
+    const gap = this.exploded ? 55 : 0;
+    let currentY = 70;
+
+    // 1. Ojiva
+    this.drawNoseCone(centerX, currentY, this.selectedPart === 'nose');
+    currentY += 45 + gap;
+
+    // 2. Bahía de Aviónica & Altímetro
+    this.drawAvionics(centerX, currentY, this.selectedPart === 'avionics');
+    currentY += 40 + gap;
+
+    // 3. Paracaídas
+    this.drawParachutePack(centerX, currentY, this.selectedPart === 'parachute');
+    currentY += 40 + gap;
+
+    // 4. Fuselaje
+    this.drawFuselage(centerX, currentY, this.selectedPart === 'body');
+    currentY += 60 + gap;
+
+    // 5. Motor y Aletas
+    this.drawEngineFins(centerX, currentY, this.selectedPart === 'motor' || this.selectedPart === 'fins');
+  }
+
+  drawNoseCone(x, y, active) {
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.fillStyle = active ? '#F5D77F' : '#D4AF37';
+    this.ctx.strokeStyle = active ? '#FFFFFF' : '#AA820A';
+    this.ctx.lineWidth = active ? 3 : 1.5;
+    this.ctx.beginPath();
+    this.ctx.moveTo(-16, 20);
+    this.ctx.quadraticCurveTo(0, -25, 0, -25);
+    this.ctx.quadraticCurveTo(0, -25, 16, 20);
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.font = '11px monospace';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('1. Ojiva Aerodinámica', 35, 5);
+    this.ctx.restore();
+  }
+
+  drawAvionics(x, y, active) {
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.fillStyle = active ? '#38BDF8' : '#1E3A8A';
+    this.ctx.strokeStyle = '#D4AF37';
+    this.ctx.lineWidth = active ? 2.5 : 1;
+    this.ctx.fillRect(-16, -15, 32, 30);
+    this.ctx.strokeRect(-16, -15, 32, 30);
+
+    // Chip icon
+    this.ctx.fillStyle = '#F5D77F';
+    this.ctx.fillRect(-6, -6, 12, 12);
+
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.font = '11px monospace';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('2. Bahía de Altímetro & IMU', 35, 3);
+    this.ctx.restore();
+  }
+
+  drawParachutePack(x, y, active) {
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.fillStyle = active ? '#F97316' : '#EA580C';
+    this.ctx.strokeStyle = '#FFFFFF';
+    this.ctx.lineWidth = active ? 2.5 : 1;
+    this.ctx.beginPath();
+    this.ctx.roundRect(-15, -15, 30, 30, 6);
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.font = '11px monospace';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('3. Paracaídas Ripstop 45cm', 35, 3);
+    this.ctx.restore();
+  }
+
+  drawFuselage(x, y, active) {
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.fillStyle = active ? '#F8FAFC' : '#E2E8F0';
+    this.ctx.strokeStyle = '#0D183E';
+    this.ctx.lineWidth = active ? 2.5 : 1.5;
+    this.ctx.fillRect(-16, -30, 32, 60);
+    this.ctx.strokeRect(-16, -30, 32, 60);
+
+    // Blue Launch Stripe
+    this.ctx.fillStyle = '#0D183E';
+    this.ctx.fillRect(-16, -8, 32, 16);
+
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.font = '11px monospace';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('4. Fuselaje de Fibra (50mm)', 35, 3);
+    this.ctx.restore();
+  }
+
+  drawEngineFins(x, y, active) {
+    this.ctx.save();
+    this.ctx.translate(x, y);
+
+    // Aletas
+    this.ctx.fillStyle = '#0D183E';
+    this.ctx.strokeStyle = '#D4AF37';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.beginPath();
+    this.ctx.moveTo(-16, -10);
+    this.ctx.lineTo(-38, 25);
+    this.ctx.lineTo(-16, 20);
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(16, -10);
+    this.ctx.lineTo(38, 25);
+    this.ctx.lineTo(16, 20);
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    // Tubo del motor
+    this.ctx.fillStyle = active ? '#AA820A' : '#713F12';
+    this.ctx.fillRect(-12, -20, 24, 45);
+
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.font = '11px monospace';
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('5. Motor Clase D/E & Aletas', 45, 3);
+    this.ctx.restore();
+  }
+}
+
+// ============================================================================
+// 7. TEMPORIZADOR DE CUENTA REGRESIVA AL 30 DE NOVIEMBRE DE 2026
+// ============================================================================
+class MissionCountdown {
   constructor() {
-    // Target date: 30 de Noviembre 2026, 23:59:59 (Fin de Noviembre)
-    this.targetDate = new Date(2026, 10, 30, 23, 59, 59).getTime(); // Month is 0-indexed: 10 = November
+    this.targetDate = new Date(2026, 10, 30, 23, 59, 59).getTime(); // 30 Noviembre 2026
     this.daysEl = document.getElementById('cd-days');
     this.hoursEl = document.getElementById('cd-hours');
     this.minsEl = document.getElementById('cd-mins');
     this.secsEl = document.getElementById('cd-secs');
     this.launchBtn = document.getElementById('btn-launch-sequence');
-    this.launchHud = document.getElementById('launch-hud-banner');
+    this.hudBanner = document.getElementById('launch-hud-banner');
 
-    this.isLaunching = false;
     this.init();
   }
 
@@ -411,7 +1283,7 @@ class CountdownTimer {
     setInterval(() => this.update(), 1000);
 
     if (this.launchBtn) {
-      this.launchBtn.addEventListener('click', () => this.startLaunchSequence());
+      this.launchBtn.addEventListener('click', () => this.startSequence());
     }
   }
 
@@ -438,57 +1310,38 @@ class CountdownTimer {
     if (this.secsEl) this.secsEl.textContent = String(seconds).padStart(2, '0');
   }
 
-  startLaunchSequence() {
-    if (this.isLaunching) return;
-    this.isLaunching = true;
-    spaceAudio.playClick();
-
-    if (this.launchBtn) {
-      this.launchBtn.disabled = true;
-      this.launchBtn.innerHTML = '<span class="pulse-dot"></span> SECUENCIA EN PROGRESO...';
-    }
-
+  startSequence() {
+    this.launchBtn.disabled = true;
     let count = 10;
-    if (this.launchHud) {
-      this.launchHud.style.display = 'block';
-      this.launchHud.innerHTML = `<span style="color:#D4AF37;">[CONTROL DE MISIÓN F1025]</span> INICIANDO SECUENCIA T-${count}s...`;
+    if (this.hudBanner) {
+      this.hudBanner.style.display = 'block';
+      this.hudBanner.innerHTML = `[CONTROL DE MISIÓN] INICIANDO SECUENCIA T-${count}s...`;
     }
 
     const interval = setInterval(() => {
       count--;
       if (count > 0) {
-        // Telemetry beep: pitch goes up on T-3, T-2, T-1
-        const freq = count <= 3 ? 1200 : 880;
-        spaceAudio.playBeep(freq, 0.12);
-        if (this.launchHud) {
-          this.launchHud.innerHTML = `<span style="color:#D4AF37;">[CONTROL DE MISIÓN]</span> T-MINUS <strong>${count}</strong> SEGUNDOS... ${count <= 3 ? '¡PRESURIZACIÓN MÁXIMA!' : 'REVISIÓN DE SISTEMAS NOMINAL'}`;
+        const freq = count <= 3 ? 1250 : 880;
+        emotionalAudio.playBeep(freq, 0.12);
+        if (this.hudBanner) {
+          this.hudBanner.innerHTML = `[CONTROL DE MISIÓN] T-MINUS <strong>${count}</strong>... ${count <= 3 ? '¡LISTO PARA IGNICIÓN!' : 'CIRCUITOS NOMINALES'}`;
         }
       } else {
         clearInterval(interval);
-        // T-0: Ignition!
-        spaceAudio.playBeep(1760, 0.4);
-        setTimeout(() => spaceAudio.playIgnitionSound(), 100);
+        emotionalAudio.playBeep(1760, 0.35);
+        setTimeout(() => emotionalAudio.playRocketBurn(), 100);
 
-        if (this.launchHud) {
-          this.launchHud.innerHTML = `<span style="color:#10B981; font-weight:bold;">🚀 ¡T-0: IGNICIÓN Y DESPEGUE EXITOSO!</span> COHETE BLUE LAUNCH EN ASCENSO SUBORBITAL.`;
+        if (this.hudBanner) {
+          this.hudBanner.innerHTML = `<span style="color:#10B981; font-weight:bold;">🚀 ¡T-0: DESPEGUE DEL COHETE BLUE LAUNCH!</span> ASCENSO VERTICAL ESTABLE.`;
         }
 
-        // Screen shake effect
-        document.body.style.animation = 'screenShake 0.6s ease-in-out';
-        setTimeout(() => {
-          document.body.style.animation = '';
-        }, 700);
+        // Simular despegue en el simulador si está disponible
+        const wowSimBtn = document.getElementById('btn-wow-launch');
+        if (wowSimBtn) wowSimBtn.click();
 
-        // Reset button after 6 seconds
         setTimeout(() => {
-          this.isLaunching = false;
-          if (this.launchBtn) {
-            this.launchBtn.disabled = false;
-            this.launchBtn.innerHTML = '🚀 Simular Secuencia de Despegue (T-10s)';
-          }
-          if (this.launchHud) {
-            this.launchHud.style.display = 'none';
-          }
+          this.launchBtn.disabled = false;
+          if (this.hudBanner) this.hudBanner.style.display = 'none';
         }, 6000);
       }
     }, 1000);
@@ -496,515 +1349,7 @@ class CountdownTimer {
 }
 
 // ============================================================================
-// 4. ROCKET FLIGHT & PHYSICS SIMULATOR (F1025)
-// ============================================================================
-class RocketPhysicsSimulator {
-  constructor(canvasId) {
-    this.canvas = document.getElementById(canvasId);
-    if (!this.canvas) return;
-    this.ctx = this.canvas.getContext('2d');
-
-    // UI Input Controls
-    this.thrustSlider = document.getElementById('sim-thrust');
-    this.dryMassSlider = document.getElementById('sim-dry-mass');
-    this.fuelMassSlider = document.getElementById('sim-fuel-mass');
-    this.flowRateSlider = document.getElementById('sim-flow-rate');
-    this.dragSlider = document.getElementById('sim-drag-coef');
-    this.gravitySelect = document.getElementById('sim-gravity');
-
-    // Value Labels
-    this.thrustVal = document.getElementById('val-thrust');
-    this.dryMassVal = document.getElementById('val-dry-mass');
-    this.fuelMassVal = document.getElementById('val-fuel-mass');
-    this.flowRateVal = document.getElementById('val-flow-rate');
-    this.dragVal = document.getElementById('val-drag-coef');
-
-    // Telemetry Displays
-    this.telAlt = document.getElementById('tel-altitude');
-    this.telVel = document.getElementById('tel-velocity');
-    this.telAcc = document.getElementById('tel-acceleration');
-    this.telFuel = document.getElementById('tel-fuel');
-    this.telMaxAlt = document.getElementById('tel-max-alt');
-    this.telDeltaV = document.getElementById('tel-delta-v');
-
-    // Action Buttons
-    this.btnLaunch = document.getElementById('btn-sim-launch');
-    this.btnReset = document.getElementById('btn-sim-reset');
-
-    // Simulation State
-    this.running = false;
-    this.altitude = 0; // meters
-    this.velocity = 0; // m/s
-    this.acceleration = 0; // m/s^2
-    this.fuelRemaining = 0; // kg
-    this.maxAltitude = 0; // meters
-    this.time = 0; // seconds
-    this.exhaustParticles = [];
-
-    this.bindInputs();
-    this.reset();
-  }
-
-  bindInputs() {
-    const sync = () => {
-      if (this.thrustVal && this.thrustSlider) this.thrustVal.textContent = `${Number(this.thrustSlider.value).toLocaleString()} N`;
-      if (this.dryMassVal && this.dryMassSlider) this.dryMassVal.textContent = `${this.dryMassSlider.value} kg`;
-      if (this.fuelMassVal && this.fuelMassSlider) this.fuelMassVal.textContent = `${this.fuelMassSlider.value} kg`;
-      if (this.flowRateVal && this.flowRateSlider) this.flowRateVal.textContent = `${this.flowRateSlider.value} kg/s`;
-      if (this.dragVal && this.dragSlider) this.dragVal.textContent = this.dragSlider.value;
-      this.calculateTsiolkovsky();
-    };
-
-    [this.thrustSlider, this.dryMassSlider, this.fuelMassSlider, this.flowRateSlider, this.dragSlider, this.gravitySelect].forEach(input => {
-      if (input) input.addEventListener('input', sync);
-    });
-
-    if (this.btnLaunch) {
-      this.btnLaunch.addEventListener('click', () => {
-        spaceAudio.playClick();
-        if (!this.running) {
-          this.launch();
-        } else {
-          this.pause();
-        }
-      });
-    }
-
-    if (this.btnReset) {
-      this.btnReset.addEventListener('click', () => {
-        spaceAudio.playClick();
-        this.reset();
-      });
-    }
-
-    sync();
-  }
-
-  calculateTsiolkovsky() {
-    const T = parseFloat(this.thrustSlider.value);
-    const m_dry = parseFloat(this.dryMassSlider.value);
-    const m_fuel = parseFloat(this.fuelMassSlider.value);
-    const m_dot = parseFloat(this.flowRateSlider.value);
-
-    const m0 = m_dry + m_fuel;
-    const mf = m_dry;
-    const ve = T / m_dot; // Effective exhaust velocity: T = m_dot * ve
-    const deltaV = ve * Math.log(m0 / mf);
-
-    if (this.telDeltaV) {
-      this.telDeltaV.textContent = `${Math.round(deltaV).toLocaleString()} m/s`;
-    }
-  }
-
-  launch() {
-    this.running = true;
-    if (this.btnLaunch) {
-      this.btnLaunch.textContent = '⏸ Pausar Simulación';
-      this.btnLaunch.classList.remove('btn-gold');
-      this.btnLaunch.classList.add('btn-outline');
-    }
-    spaceAudio.playIgnitionSound();
-    this.lastTimestamp = performance.now();
-    this.loop();
-  }
-
-  pause() {
-    this.running = false;
-    if (this.btnLaunch) {
-      this.btnLaunch.textContent = '▶ Reanudar';
-      this.btnLaunch.classList.remove('btn-outline');
-      this.btnLaunch.classList.add('btn-gold');
-    }
-  }
-
-  reset() {
-    this.running = false;
-    this.altitude = 0;
-    this.velocity = 0;
-    this.acceleration = 0;
-    this.fuelRemaining = parseFloat(this.fuelMassSlider ? this.fuelMassSlider.value : 400);
-    this.maxAltitude = 0;
-    this.time = 0;
-    this.exhaustParticles = [];
-
-    if (this.btnLaunch) {
-      this.btnLaunch.textContent = '🚀 Iniciar Simulación';
-      this.btnLaunch.classList.remove('btn-outline');
-      this.btnLaunch.classList.add('btn-gold');
-    }
-
-    this.updateTelemetry();
-    this.draw();
-  }
-
-  loop() {
-    if (!this.running) return;
-    const now = performance.now();
-    const dt = Math.min((now - (this.lastTimestamp || now)) / 1000, 0.05); // max 50ms step
-    this.lastTimestamp = now;
-
-    this.stepPhysics(dt * 2.0); // 2x simulation speed for engaging experience
-    this.draw();
-    this.updateTelemetry();
-
-    requestAnimationFrame(() => this.loop());
-  }
-
-  stepPhysics(dt) {
-    this.time += dt;
-
-    const T_nominal = parseFloat(this.thrustSlider.value);
-    const m_dry = parseFloat(this.dryMassSlider.value);
-    const m_dot = parseFloat(this.flowRateSlider.value);
-    const Cd = parseFloat(this.dragSlider.value);
-    const g_planet = parseFloat(this.gravitySelect.value);
-
-    // Fuel consumption
-    let thrust = 0;
-    if (this.fuelRemaining > 0) {
-      const fuelBurned = m_dot * dt;
-      this.fuelRemaining = Math.max(0, this.fuelRemaining - fuelBurned);
-      thrust = T_nominal;
-
-      // Spawn exhaust particles
-      for (let i = 0; i < 4; i++) {
-        this.exhaustParticles.push({
-          x: (Math.random() - 0.5) * 12,
-          y: Math.random() * 8,
-          vx: (Math.random() - 0.5) * 20,
-          vy: Math.random() * 60 + 40,
-          size: Math.random() * 8 + 4,
-          life: 1.0
-        });
-      }
-    }
-
-    const currentMass = m_dry + this.fuelRemaining;
-
-    // Atmospheric Drag: Fd = 0.5 * rho * v^2 * Cd * Area
-    // Barometric formula: rho(h) = 1.225 * exp(-h / 8500)
-    const rho = 1.225 * Math.exp(-this.altitude / 8500);
-    const area = 0.45; // m^2 cross section
-    const drag = 0.5 * rho * Math.pow(this.velocity, 2) * Cd * area * Math.sign(this.velocity);
-
-    // Gravity variation with altitude: g(h) = g0 * (RE / (RE + h))^2
-    const RE = 6371000; // Earth radius in meters
-    const g_effective = g_planet * Math.pow(RE / (RE + this.altitude), 2);
-    const weight = currentMass * g_effective;
-
-    // Second Law of Newton: F_net = Thrust - Drag - Weight
-    const F_net = thrust - drag - weight;
-    this.acceleration = F_net / currentMass;
-
-    // Integration
-    this.velocity += this.acceleration * dt;
-    this.altitude += this.velocity * dt;
-
-    if (this.altitude < 0) {
-      this.altitude = 0;
-      this.velocity = 0;
-      this.acceleration = 0;
-      if (this.fuelRemaining <= 0) {
-        this.running = false;
-        if (this.btnLaunch) {
-          this.btnLaunch.textContent = '🔄 Reiniciar Simulación';
-          this.btnLaunch.classList.remove('btn-outline');
-          this.btnLaunch.classList.add('btn-gold');
-        }
-      }
-    }
-
-    if (this.altitude > this.maxAltitude) {
-      this.maxAltitude = this.altitude;
-    }
-
-    // Update particles
-    for (let p of this.exhaustParticles) {
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.size += dt * 8;
-      p.life -= dt * 2.2;
-    }
-    this.exhaustParticles = this.exhaustParticles.filter(p => p.life > 0);
-  }
-
-  updateTelemetry() {
-    if (this.telAlt) this.telAlt.textContent = this.altitude > 1000 ? `${(this.altitude / 1000).toFixed(2)} km` : `${Math.round(this.altitude)} m`;
-    if (this.telVel) {
-      const mach = (this.velocity / 340).toFixed(2);
-      this.telVel.textContent = `${Math.round(this.velocity)} m/s (M${mach})`;
-    }
-    if (this.telAcc) {
-      const g_force = (this.acceleration / 9.81).toFixed(2);
-      this.telAcc.textContent = `${this.acceleration.toFixed(1)} m/s² (${g_force}g)`;
-    }
-    if (this.telFuel) {
-      const initialFuel = parseFloat(this.fuelMassSlider ? this.fuelMassSlider.value : 400);
-      const pct = Math.max(0, Math.round((this.fuelRemaining / initialFuel) * 100));
-      this.telFuel.textContent = `${pct}% (${Math.round(this.fuelRemaining)} kg)`;
-    }
-    if (this.telMaxAlt) {
-      this.telMaxAlt.textContent = this.maxAltitude > 1000 ? `${(this.maxAltitude / 1000).toFixed(2)} km` : `${Math.round(this.maxAltitude)} m`;
-    }
-  }
-
-  draw() {
-    const w = this.canvas.width = this.canvas.parentElement.clientWidth;
-    const h = this.canvas.height = 380;
-
-    // Atmospheric gradient based on altitude
-    const altRatio = Math.min(1, this.altitude / 80000); // 80km space boundary
-    const rTop = Math.round(7 * (1 - altRatio));
-    const gTop = Math.round(11 * (1 - altRatio));
-    const bTop = Math.round(25 * (1 - altRatio) + 10 * altRatio);
-    const rBot = Math.round(17 * (1 - altRatio) + 7 * altRatio);
-    const gBot = Math.round(30 * (1 - altRatio) + 11 * altRatio);
-    const bBot = Math.round(79 * (1 - altRatio) + 25 * altRatio);
-
-    const grad = this.ctx.createLinearGradient(0, 0, 0, h);
-    grad.addColorStop(0, `rgb(${rTop}, ${gTop}, ${bTop})`);
-    grad.addColorStop(1, `rgb(${rBot}, ${gBot}, ${bBot})`);
-    this.ctx.fillStyle = grad;
-    this.ctx.fillRect(0, 0, w, h);
-
-    // Altitude lines
-    this.ctx.strokeStyle = 'rgba(212, 175, 55, 0.15)';
-    this.ctx.lineWidth = 1;
-    for (let y = 50; y < h; y += 70) {
-      this.ctx.beginPath();
-      this.ctx.moveTo(0, y);
-      this.ctx.lineTo(w, y);
-      this.ctx.stroke();
-    }
-
-    // Ground platform when altitude is low
-    const groundY = h - 25;
-    if (this.altitude < 500) {
-      const gOffset = (this.altitude / 500) * 120;
-      this.ctx.fillStyle = '#1e293b';
-      this.ctx.fillRect(0, groundY + gOffset, w, 60);
-      this.ctx.fillStyle = '#D4AF37';
-      this.ctx.fillRect(w / 2 - 40, groundY + gOffset, 80, 6);
-    }
-
-    // Rocket position on canvas (smooth visual framing)
-    const rocketX = w / 2;
-    // Visually ascends from groundY - 50 to middle of canvas
-    const visualY = Math.max(120, groundY - 50 - Math.min(this.altitude * 0.4, 200));
-
-    // Draw Exhaust Particles
-    for (let p of this.exhaustParticles) {
-      this.ctx.beginPath();
-      this.ctx.arc(rocketX + p.x, visualY + 45 + p.y, p.size, 0, Math.PI * 2);
-      const alpha = p.life * 0.8;
-      this.ctx.fillStyle = p.life > 0.6 ? `rgba(254, 240, 138, ${alpha})` : (p.life > 0.3 ? `rgba(249, 115, 22, ${alpha})` : `rgba(148, 163, 184, ${alpha})`);
-      this.ctx.fill();
-    }
-
-    // Draw Rocket Body
-    this.ctx.save();
-    this.ctx.translate(rocketX, visualY);
-
-    // Body Tube
-    this.ctx.fillStyle = '#FFFFFF';
-    this.ctx.beginPath();
-    this.ctx.roundRect(-10, -35, 20, 65, [10, 10, 2, 2]);
-    this.ctx.fill();
-
-    // Nose Cone (Gold)
-    this.ctx.fillStyle = '#D4AF37';
-    this.ctx.beginPath();
-    this.ctx.moveTo(-10, -35);
-    this.ctx.lineTo(0, -60);
-    this.ctx.lineTo(10, -35);
-    this.ctx.closePath();
-    this.ctx.fill();
-
-    // Blue Launch Accent Stripe
-    this.ctx.fillStyle = '#0D183E';
-    this.ctx.fillRect(-10, -10, 20, 14);
-
-    // Circuit logo detail on rocket
-    this.ctx.strokeStyle = '#D4AF37';
-    this.ctx.lineWidth = 1.5;
-    this.ctx.beginPath();
-    this.ctx.moveTo(0, -8);
-    this.ctx.lineTo(0, 0);
-    this.ctx.stroke();
-
-    // Fins (Titanium Blue/Gold)
-    this.ctx.fillStyle = '#0D183E';
-    this.ctx.beginPath();
-    this.ctx.moveTo(-10, 15);
-    this.ctx.lineTo(-24, 34);
-    this.ctx.lineTo(-10, 30);
-    this.ctx.closePath();
-    this.ctx.fill();
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(10, 15);
-    this.ctx.lineTo(24, 34);
-    this.ctx.lineTo(10, 30);
-    this.ctx.closePath();
-    this.ctx.fill();
-
-    // Nozzle
-    this.ctx.fillStyle = '#475569';
-    this.ctx.beginPath();
-    this.ctx.moveTo(-7, 30);
-    this.ctx.lineTo(7, 30);
-    this.ctx.lineTo(10, 42);
-    this.ctx.lineTo(-10, 42);
-    this.ctx.closePath();
-    this.ctx.fill();
-
-    // Active Engine Flame
-    if (this.fuelRemaining > 0 && this.running) {
-      const flameHeight = 25 + Math.random() * 20;
-      this.ctx.beginPath();
-      this.ctx.moveTo(-7, 42);
-      this.ctx.lineTo(0, 42 + flameHeight);
-      this.ctx.lineTo(7, 42);
-      this.ctx.fillStyle = '#f59e0b';
-      this.ctx.shadowBlur = 15;
-      this.ctx.shadowColor = '#f59e0b';
-      this.ctx.fill();
-
-      // Inner blue core
-      this.ctx.beginPath();
-      this.ctx.moveTo(-3, 42);
-      this.ctx.lineTo(0, 42 + flameHeight * 0.5);
-      this.ctx.lineTo(3, 42);
-      this.ctx.fillStyle = '#38bdf8';
-      this.ctx.fill();
-      this.ctx.shadowBlur = 0;
-    }
-
-    this.ctx.restore();
-  }
-}
-
-// ============================================================================
-// 5. ANATOMY HOTSPOTS & COMPONENT INSPECTOR
-// ============================================================================
-function initAnatomyExplorer() {
-  const cards = document.querySelectorAll('.hotspot-card');
-  const modal = document.getElementById('anatomy-modal');
-  const modalTitle = document.getElementById('anatomy-modal-title');
-  const modalBody = document.getElementById('anatomy-modal-body');
-
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      spaceAudio.playClick();
-      cards.forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-
-      const title = card.getAttribute('data-title');
-      const specs = card.getAttribute('data-specs');
-      const physics = card.getAttribute('data-physics');
-
-      if (modal && modalTitle && modalBody) {
-        modalTitle.textContent = title;
-        modalBody.innerHTML = `
-          <div style="margin-bottom: 1rem; color: #CBD5E1; font-size: 0.95rem;">
-            <strong>Especificaciones Técnicas:</strong><br>${specs}
-          </div>
-          <div style="background: rgba(7, 11, 25, 0.8); padding: 1rem; border-radius: 0.5rem; border-left: 3px solid #D4AF37;">
-            <strong style="color: #D4AF37;">Principio Físico F1025:</strong><br>${physics}
-          </div>
-        `;
-        modal.classList.add('open');
-      }
-    });
-  });
-}
-
-// ============================================================================
-// 6. MISSION TERMINAL (COMMAND LINE INTERACTION)
-// ============================================================================
-function initMissionTerminal() {
-  const input = document.getElementById('terminal-input');
-  const body = document.getElementById('terminal-body');
-  const buttons = document.querySelectorAll('.terminal-badge-btn');
-
-  if (!input || !body) return;
-
-  const appendLine = (text, isCommand = false, isError = false) => {
-    const line = document.createElement('div');
-    if (isCommand) {
-      line.style.color = '#D4AF37';
-      line.textContent = `> ${text}`;
-    } else if (isError) {
-      line.style.color = '#ef4444';
-      line.textContent = text;
-    } else {
-      line.style.color = '#38bdf8';
-      line.innerHTML = text;
-    }
-    body.appendChild(line);
-    body.scrollTop = body.scrollHeight;
-  };
-
-  const handleCommand = (raw) => {
-    const cmd = raw.trim().toLowerCase();
-    if (!cmd) return;
-    spaceAudio.playClick();
-    appendLine(raw, true);
-
-    switch (cmd) {
-      case 'help':
-        appendLine('Comandos disponibles: <code>status</code>, <code>telemetry</code>, <code>laws</code>, <code>launch</code>, <code>tsiolkovsky</code>, <code>team</code>, <code>audio</code>, <code>clear</code>');
-        break;
-      case 'status':
-        appendLine('ESTADO DE LA MISIÓN: <span style="color:#10B981;">NOMINAL</span> | SISTEMA EN ESPERA | VENTANA DE LANZAMIENTO: FIN DE NOVIEMBRE 2026.');
-        break;
-      case 'telemetry':
-        appendLine('TELEMETRÍA ACTUAL: Apogeo objetivo = 124.8 km | Presión Dinámica Max-Q = 32.4 kPa | Impulso Específico = 285 s | Masa inicial = 520 kg.');
-        break;
-      case 'laws':
-        appendLine('FUNDAMENTOS F1025:<br>1. Inercia (1ª Ley Newton)<br>2. F_neta = dp/dt (2ª Ley masa variable)<br>3. Acción y Reacción (3ª Ley propulsiva)<br>4. Conservación del Momentum (Ecuación de Tsiolkovsky)<br>5. Conservación de la Energía (E_química = E_cinética + E_potencial + W_arrastre)');
-        break;
-      case 'tsiolkovsky':
-        appendLine('ECUACIÓN DEL COHETE: &Delta;v = v_e &middot; ln(m_0 / m_f) = I_sp &middot; g_0 &middot; ln(m_0 / m_f). Para m0=520kg y mf=120kg con Isp=285s: &Delta;v = 2,790 m/s.');
-        break;
-      case 'launch':
-        appendLine('Iniciando simulación de despegue...');
-        const btnLaunchSeq = document.getElementById('btn-launch-sequence');
-        if (btnLaunchSeq) btnLaunchSeq.click();
-        break;
-      case 'team':
-        appendLine('EQUIPO BLUE LAUNCH (Rocket Tec Sinaloa):<br>- Dirección de Misión y Modelación F1025<br>- Ingeniería de Propulsión y Dinámica de Fluidos<br>- Telemetría, Sensores y Software de Control<br>- Análisis Estructural y Balística');
-        break;
-      case 'audio':
-        const playing = spaceAudio.toggleMusic();
-        appendLine(`Música espacial: ${playing ? '<span style="color:#10B981;">ACTIVADA</span>' : '<span style="color:#ef4444;">PAUSADA</span>'}`);
-        break;
-      case 'clear':
-        body.innerHTML = '';
-        break;
-      default:
-        appendLine(`Comando no reconocido: "${raw}". Escribe <code>help</code> para ver opciones.`, false, true);
-    }
-  };
-
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const val = input.value;
-      input.value = '';
-      handleCommand(val);
-    }
-  });
-
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const cmd = btn.getAttribute('data-cmd');
-      if (cmd) handleCommand(cmd);
-    });
-  });
-}
-
-// ============================================================================
-// 7. MODALS & GENERAL UI INTERACTIONS
+// 8. MODALS & GENERAL HANDLERS
 // ============================================================================
 function initModals() {
   const modals = document.querySelectorAll('.modal-backdrop');
@@ -1012,7 +1357,7 @@ function initModals() {
 
   closeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      spaceAudio.playClick();
+      emotionalAudio.playClick();
       modals.forEach(m => m.classList.remove('open'));
     });
   });
@@ -1020,87 +1365,62 @@ function initModals() {
   modals.forEach(m => {
     m.addEventListener('click', (e) => {
       if (e.target === m) {
-        spaceAudio.playClick();
+        emotionalAudio.playClick();
         m.classList.remove('open');
       }
     });
   });
 
-  // Poster Modal Trigger
-  const posterPreview = document.getElementById('poster-preview-btn');
-  const posterModal = document.getElementById('poster-modal');
-  if (posterPreview && posterModal) {
-    posterPreview.addEventListener('click', () => {
-      spaceAudio.playClick();
-      posterModal.classList.add('open');
+  const zipBtn = document.getElementById('btn-download-zip');
+  const zipModal = document.getElementById('zip-modal');
+  if (zipBtn && zipModal) {
+    zipBtn.addEventListener('click', () => {
+      emotionalAudio.playClick();
+      zipModal.classList.add('open');
     });
   }
 
-  // Report Modal Trigger
   const reportBtn = document.getElementById('btn-view-report');
   const reportModal = document.getElementById('report-modal');
   if (reportBtn && reportModal) {
     reportBtn.addEventListener('click', () => {
-      spaceAudio.playClick();
+      emotionalAudio.playClick();
       reportModal.classList.add('open');
     });
   }
 }
 
 // ============================================================================
-// 8. INITIALIZATION ON DOM READY
+// INICIALIZACIÓN GENERAL
 // ============================================================================
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Starfield Background
-  new Starfield('starfield-canvas');
-
-  // 2. Countdown Timer
-  new CountdownTimer();
-
-  // 3. Rocket Simulator
-  new RocketPhysicsSimulator('flight-canvas');
-
-  // 4. Anatomy Explorer
-  initAnatomyExplorer();
-
-  // 5. Terminal Console
-  initMissionTerminal();
-
-  // 6. Modals
+  new CosmicStarfield('starfield-canvas');
+  init3DTiltCards();
+  new SmallRocketLaunchSimulator('rocket-launch-canvas');
+  new AerodynamicWindTunnel('windtunnel-canvas');
+  new ExplodedRocketInspector('exploded-canvas');
+  new MissionCountdown();
   initModals();
 
-  
-  // Zip Modal Trigger
-  const zipBtn = document.getElementById('btn-download-zip');
-  const zipModal = document.getElementById('zip-modal');
-  if (zipBtn && zipModal) {
-    zipBtn.addEventListener('click', () => {
-      spaceAudio.playClick();
-      zipModal.classList.add('open');
-    });
-  }
-
-  // 7. Audio Controls
-  const toggleMusicBtn = document.getElementById('btn-toggle-music');
+  // Control de Música Emocional
+  const musicBtn = document.getElementById('btn-toggle-music');
   const volumeSlider = document.getElementById('audio-volume');
 
-  if (toggleMusicBtn) {
-    toggleMusicBtn.addEventListener('click', () => {
-      const isPlaying = spaceAudio.toggleMusic();
-      toggleMusicBtn.innerHTML = isPlaying ? '⏸ Pausar Música' : '▶ Música Espacial';
+  if (musicBtn) {
+    musicBtn.addEventListener('click', () => {
+      const isPlaying = emotionalAudio.toggle();
+      musicBtn.innerHTML = isPlaying ? '⏸ Pausar Música' : '▶ Música Espacial';
       if (isPlaying) {
-        toggleMusicBtn.classList.remove('btn-outline');
-        toggleMusicBtn.classList.add('btn-gold');
+        musicBtn.classList.add('btn-gold');
       } else {
-        toggleMusicBtn.classList.remove('btn-gold');
-        toggleMusicBtn.classList.add('btn-outline');
+        musicBtn.classList.remove('btn-gold');
       }
     });
   }
 
   if (volumeSlider) {
     volumeSlider.addEventListener('input', (e) => {
-      spaceAudio.setVolume(e.target.value);
+      emotionalAudio.setVolume(e.target.value);
     });
   }
 });
