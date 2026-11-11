@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blue Launch | Proyecto Final F1025 - Leyes del Movimiento y Conservación</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=JetBrains+Mono:wght@400;600;800&family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Interactive Starfield Canvas -->
+  <canvas id="starfield-canvas"></canvas>
+
+  <!-- ==========================================================================
+       SITE HEADER & NAVIGATION
+       ========================================================================== -->
+  <header class="site-header">
+    <div class="container nav-inner">
+      <a href="#inicio" class="brand-wrapper">
+        <img src="assets/logo-horizontal.jpg" alt="Blue Launch Logo" class="brand-logo-img">
+      </a>
+
+      <nav>
+        <ul class="nav-menu">
+          <li><a href="#inicio" class="nav-link active">Inicio</a></li>
+          <li><a href="#cuenta-regresiva" class="nav-link">Lanzamiento</a></li>
+          <li><a href="#marco-fisico" class="nav-link">Leyes F1025</a></li>
+          <li><a href="#simulador" class="nav-link">Simulador</a></li>
+          <li><a href="#anatomia" class="nav-link">Anatomía</a></li>
+          <li><a href="#identidad" class="nav-link">Identidad</a></li>
+          <li><a href="#equipo" class="nav-link">Equipo</a></li>
+          <li><a href="#entregables" class="nav-link">Entregables</a></li>
+        </ul>
+      </nav>
+
+      <!-- Audio & SFX Controls -->
+      <div class="audio-widget">
+        <button id="btn-toggle-music" class="btn btn-outline" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">
+          ▶ Música Espacial
+        </button>
+        <canvas id="audio-visualizer" class="audio-bars-canvas" width="48" height="18"></canvas>
+        <input type="range" id="audio-volume" class="audio-volume-slider" min="0" max="1" step="0.05" value="0.5" title="Volumen de Música">
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       HERO SECTION
+       ========================================================================== -->
+  <section id="inicio" class="hero-section">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="hero-badge-pill">
+          <span class="pulse-dot"></span>
+          <span>AEROSPACE & TECH • ROCKET TEC SINALOA</span>
+        </div>
+        <h1 class="hero-title">
+          Innovación Digital <br><span class="text-gold font-serif">en Órbita</span>
+        </h1>
+        <h2 class="hero-subtitle">
+          Proyecto Final Integrador: <strong class="text-white">F1025 Leyes del Movimiento y Conservación</strong>
+        </h2>
+        <p class="hero-lead">
+          Diseño aerodinámico, modelación matemática y simulación del vuelo suborbital del vehículo aeroespacial <strong>Blue Launch</strong>. Validación experimental de las leyes de Newton, conservación del momentum lineal mediante la ecuación de Tsiolkovsky y balances de energía mecánica.
+        </p>
+        <div class="hero-actions">
+          <a href="#simulador" class="btn btn-gold">
+            🚀 Iniciar Simulador de Vuelo
+          </a>
+          <a href="#cuenta-regresiva" class="btn btn-outline">
+            ⏱ Cuenta Regresiva de Misión
+          </a>
+          <a href="#entregables" class="btn btn-outline">
+            📦 Descargar Archivos (.zip)
+          </a>
+        </div>
+      </div>
+
+      <!-- Hero Visual Emblem Card -->
+      <div class="hero-visual-card glass-panel">
+        <div class="hero-orbit-ring">
+          <div class="hero-orbit-satellite" title="Satélite Blue Launch"></div>
+        </div>
+        <img src="assets/logo-circular.jpg" alt="Blue Launch Badge" class="hero-logo-circular">
+
+        <div class="hero-stats-strip">
+          <div class="stat-item">
+            <div class="stat-number">124.8 km</div>
+            <div class="stat-label">Apogeo Máximo</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">2,790 m/s</div>
+            <div class="stat-label">&Delta;v Tsiolkovsky</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">285 s</div>
+            <div class="stat-label">Impulso Específico</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       COUNTDOWN SECTION WITH AUDIO & LAUNCH SEQUENCE
+       ========================================================================== -->
+  <section id="cuenta-regresiva" class="countdown-section">
+    <div class="container">
+      <div class="countdown-box glass-panel gold-glow">
+        <div class="countdown-header">
+          <div class="section-tag">VENTANA DE LANZAMIENTO Y ENTREGA FINAL</div>
+          <h2 class="countdown-title">Cuenta Regresiva de Misión</h2>
+          <p class="countdown-target-date">CIERRE OFICIAL DEL PROYECTO: 30 DE NOVIEMBRE DE 2026 • 23:59:59 CST</p>
+        </div>
+
+        <div class="countdown-grid">
+          <div class="countdown-card">
+            <div id="cd-days" class="countdown-digit text-gold">00</div>
+            <div class="countdown-unit">Días</div>
+          </div>
+          <div class="countdown-card">
+            <div id="cd-hours" class="countdown-digit text-gold">00</div>
+            <div class="countdown-unit">Horas</div>
+          </div>
+          <div class="countdown-card">
+            <div id="cd-mins" class="countdown-digit text-gold">00</div>
+            <div class="countdown-unit">Minutos</div>
+          </div>
+          <div class="countdown-card">
+            <div id="cd-secs" class="countdown-digit text-gold">00</div>
+            <div class="countdown-unit">Segundos</div>
+          </div>
+        </div>
+
+        <!-- Launch HUD Notification -->
+        <div id="launch-hud-banner" class="glass-panel" style="display: none; max-width: 700px; margin: 0 auto 1.5rem; padding: 0.75rem 1.25rem; text-align: center; font-family: var(--font-mono); font-size: 0.9rem; border-color: var(--color-gold);">
+        </div>
+
+        <div class="countdown-actions">
+          <button id="btn-launch-sequence" class="btn btn-danger" style="font-size: 1.05rem; padding: 0.9rem 2rem;">
+            🚀 Simular Secuencia de Despegue (T-10s)
+          </button>
+          <div class="countdown-audio-indicator">
+            <span style="color: var(--color-gold);">🔊</span> Audio de telemetría y cuenta regresiva activo
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       MARCO FÍSICO F1025 (LEYES DE NEWTON & CONSERVACIÓN)
+       ========================================================================== -->
+  <section id="marco-fisico" class="physics-section">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-tag">FUNDAMENTACIÓN TEÓRICA F1025</div>
+        <h2 class="section-title">Leyes del Movimiento y Conservación</h2>
+        <p class="section-description">
+          El vuelo del cohete <strong>Blue Launch</strong> integra los principios fundamentales de la mecánica clásica aplicados a sistemas aeroespaciales de masa variable.
+        </p>
+      </div>
+
+      <div class="laws-grid">
+        <!-- 1ª Ley -->
+        <div class="law-card glass-panel">
+          <span class="law-badge">MÓDULO 1</span>
+          <h3 class="law-title">1ª Ley de Newton: Inercia</h3>
+          <div class="law-formula">&sum; F&#8407; = 0 &rArr; v&#8407; = cte</div>
+          <p class="law-desc">
+            Todo cuerpo persevera en su estado de reposo o movimiento rectilíneo uniforme a menos que sea obligado a cambiar su estado por fuerzas netas aplicadas sobre él.
+          </p>
+          <div class="law-app">
+            <strong>Aplicación en Misión:</strong> Fase de vuelo balístico y apagado de motores (MECO). Una vez fuera de la atmósfera apreciable, el vehículo mantiene su trayectoria sin requerir empuje constante.
+          </div>
+        </div>
+
+        <!-- 2ª Ley -->
+        <div class="law-card glass-panel">
+          <span class="law-badge">MÓDULO 2</span>
+          <h3 class="law-title">2ª Ley: Sistemas de Masa Variable</h3>
+          <div class="law-formula">F&#8407;<sub>neta</sub> = d(p&#8407;)/dt = m(t)&middot;a&#8407; - v&#8407;<sub>e</sub>&middot;(dm/dt)</div>
+          <p class="law-desc">
+            La aceleración es proporcional a la fuerza neta e inversamente proporcional a la masa instantánea. Dado que el cohete consume combustible, la masa decrece continuamente provocando una aceleración creciente.
+          </p>
+          <div class="law-app">
+            <strong>Aplicación en Misión:</strong> Balance dinámico: Empuje - Arrastre Aerodinámico - Peso Gravitatorio = Masa(t) &times; Aceleración.
+          </div>
+        </div>
+
+        <!-- 3ª Ley -->
+        <div class="law-card glass-panel">
+          <span class="law-badge">MÓDULO 3</span>
+          <h3 class="law-title">3ª Ley: Acción y Reacción</h3>
+          <div class="law-formula">F&#8407;<sub>cohete</sub> = - F&#8407;<sub>gases</sub> &rArr; T = &dot;m &middot; v<sub>e</sub></div>
+          <p class="law-desc">
+            A toda acción le corresponde una reacción igual en magnitud pero de sentido opuesto. La fuerza ejercida para expulsar los gases de combustión por la tobera empuja al cohete hacia adelante.
+          </p>
+          <div class="law-app">
+            <strong>Aplicación en Misión:</strong> La tobera de Laval expande los gases a velocidad supersónica (v<sub>e</sub> &approx; 2,800 m/s), generando el empuje propulsor de 18.5 kN.
+          </div>
+        </div>
+
+        <!-- Conservación de Momentum -->
+        <div class="law-card glass-panel">
+          <span class="law-badge">MÓDULO 4</span>
+          <h3 class="law-title">Conservación del Momentum (Tsiolkovsky)</h3>
+          <div class="law-formula">&Delta;v = v<sub>e</sub> &middot; ln(m<sub>0</sub> / m<sub>f</sub>) = I<sub>sp</sub> &middot; g<sub>0</sub> &middot; ln(m<sub>0</sub> / m<sub>f</sub>)</div>
+          <p class="law-desc">
+            En un sistema aislado, la cantidad de movimiento lineal total se conserva (&sum; p&#8407;<sub>i</sub> = &sum; p&#8407;<sub>f</sub>). Integrando el retroceso del combustible eyectado se obtiene la célebre ecuación de Konstantin Tsiolkovsky.
+          </p>
+          <div class="law-app">
+            <strong>Aplicación en Misión:</strong> Determina la capacidad total de cambio de velocidad (&Delta;v) requerida para alcanzar el apogeo suborbital de 124.8 km.
+          </div>
+        </div>
+
+        <!-- Conservación de Energía -->
+        <div class="law-card glass-panel">
+          <span class="law-badge">MÓDULO 5</span>
+          <h3 class="law-title">Conservación de la Energía Mecánica</h3>
+          <div class="law-formula">E<sub>química</sub> = &Delta;E<sub>k</sub> + &Delta;E<sub>p</sub> + W<sub>arrastre</sub></div>
+          <p class="law-desc">
+            La energía no se crea ni se destruye, solo se transforma. La energía química almacenada en el propelente se convierte en energía cinética (&frac12;mv&sup2;), energía potencial gravitatoria (mgh) y trabajo disipado por fricción atmosférica.
+          </p>
+          <div class="law-app">
+            <strong>Aplicación en Misión:</strong> Cálculo de pérdidas por presión dinámica (Max-Q) y eficiencia de la conversión termomecánica en el régimen supersónico.
+          </div>
+        </div>
+
+        <!-- Gravitación Universal -->
+        <div class="law-card glass-panel">
+          <span class="law-badge">MÓDULO 6</span>
+          <h3 class="law-title">Gravitación y Dinámica Orbital</h3>
+          <div class="law-formula">F<sub>g</sub>(h) = G &middot; (M<sub>T</sub> &middot; m) / (R<sub>T</sub> + h)&sup2;</div>
+          <p class="law-desc">
+            La aceleración de gravedad disminuye con la altitud. Para trayectorias que superan la línea de Kármán (100 km), la variación de g(h) debe integrarse numéricamente.
+          </p>
+          <div class="law-app">
+            <strong>Aplicación en Misión:</strong> Simulación precisa de la órbita de inyección del micro-satélite Blue Launch.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       SIMULADOR DE VUELO Y PROPULSIÓN INTERACTIVO
+       ========================================================================== -->
+  <section id="simulador" class="simulator-section">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-tag">LABORATORIO VIRTUAL DE FÍSICA F1025</div>
+        <h2 class="section-title">Simulador de Propulsión y Dinámica de Vuelo</h2>
+        <p class="section-description">
+          Ajusta los parámetros físicos del motor y la masa para simular la trayectoria en tiempo real resolviendo numéricamente las ecuaciones diferenciales de movimiento.
+        </p>
+      </div>
+
+      <div class="simulator-wrapper">
+        <!-- Control Panel -->
+        <div class="sim-controls-panel glass-panel">
+          <h3 style="font-size: 1.15rem; margin-bottom: 1.25rem; color: var(--color-gold);">
+            ⚙️ Parámetros de Propulsión
+          </h3>
+
+          <div class="sim-control-group">
+            <div class="sim-control-label">
+              <span>Empuje Motor (T)</span>
+              <span id="val-thrust" class="text-gold font-mono">18,500 N</span>
+            </div>
+            <input type="range" id="sim-thrust" class="sim-slider" min="8000" max="30000" step="500" value="18500">
+          </div>
+
+          <div class="sim-control-group">
+            <div class="sim-control-label">
+              <span>Masa Seca (m_dry)</span>
+              <span id="val-dry-mass" class="text-gold font-mono">120 kg</span>
+            </div>
+            <input type="range" id="sim-dry-mass" class="sim-slider" min="60" max="300" step="5" value="120">
+          </div>
+
+          <div class="sim-control-group">
+            <div class="sim-control-label">
+              <span>Masa Combustible (m_fuel)</span>
+              <span id="val-fuel-mass" class="text-gold font-mono">400 kg</span>
+            </div>
+            <input type="range" id="sim-fuel-mass" class="sim-slider" min="150" max="800" step="10" value="400">
+          </div>
+
+          <div class="sim-control-group">
+            <div class="sim-control-label">
+              <span>Consumo Másico (&dot;m)</span>
+              <span id="val-flow-rate" class="text-gold font-mono">15 kg/s</span>
+            </div>
+            <input type="range" id="sim-flow-rate" class="sim-slider" min="5" max="35" step="1" value="15">
+          </div>
+
+          <div class="sim-control-group">
+            <div class="sim-control-label">
+              <span>Coef. Arrastre (C_d)</span>
+              <span id="val-drag-coef" class="text-gold font-mono">0.32</span>
+            </div>
+            <input type="range" id="sim-drag-coef" class="sim-slider" min="0.1" max="0.8" step="0.02" value="0.32">
+          </div>
+
+          <div class="sim-control-group">
+            <div class="sim-control-label">
+              <span>Cuerpo Celeste (Gravedad)</span>
+            </div>
+            <select id="sim-gravity" class="sim-select">
+              <option value="9.81">Tierra (g = 9.81 m/s²)</option>
+              <option value="3.71">Marte (g = 3.71 m/s²)</option>
+              <option value="1.62">Luna (g = 1.62 m/s²)</option>
+            </select>
+          </div>
+
+          <div class="sim-actions">
+            <button id="btn-sim-launch" class="btn btn-gold">
+              🚀 Iniciar Simulación
+            </button>
+            <button id="btn-sim-reset" class="btn btn-outline">
+              🔄 Reiniciar
+            </button>
+          </div>
+        </div>
+
+        <!-- Stage & Telemetry Panel -->
+        <div class="sim-stage-panel">
+          <div class="sim-canvas-container">
+            <canvas id="flight-canvas"></canvas>
+            <div class="sim-hud-overlay">
+              <div>ESTADO: <span style="color:#10b981;">TELEMETRÍA EN VIVO</span></div>
+              <div>CÁLCULO: RUNGE-KUTTA / EULER</div>
+              <div>ATMÓSFERA: BAROMÉTRICA EXPONENCIAL</div>
+            </div>
+          </div>
+
+          <!-- Real-time Telemetry Grid -->
+          <div class="telemetry-grid">
+            <div class="telemetry-card">
+              <div id="tel-altitude" class="telemetry-val">0 m</div>
+              <div class="telemetry-lbl">Altitud Actual</div>
+            </div>
+            <div class="telemetry-card">
+              <div id="tel-velocity" class="telemetry-val">0 m/s (M0.0)</div>
+              <div class="telemetry-lbl">Velocidad / Mach</div>
+            </div>
+            <div class="telemetry-card">
+              <div id="tel-acceleration" class="telemetry-val">0.0 m/s² (0g)</div>
+              <div class="telemetry-lbl">Aceleración Neta</div>
+            </div>
+            <div class="telemetry-card">
+              <div id="tel-fuel" class="telemetry-val">100% (400 kg)</div>
+              <div class="telemetry-lbl">Combustible</div>
+            </div>
+            <div class="telemetry-card">
+              <div id="tel-max-alt" class="telemetry-val">0 m</div>
+              <div class="telemetry-lbl">Apogeo Máximo</div>
+            </div>
+            <div class="telemetry-card">
+              <div id="tel-delta-v" class="telemetry-val">2,790 m/s</div>
+              <div class="telemetry-lbl">&Delta;v Tsiolkovsky</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       ANATOMÍA DEL COHETE & MISSION CONTROL TERMINAL
+       ========================================================================== -->
+  <section id="anatomia" class="anatomy-section">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-tag">INGENIERÍA AEROESPACIAL</div>
+        <h2 class="section-title">Anatomía del Vehículo Blue Launch</h2>
+        <p class="section-description">
+          Haz clic en cada componente para inspeccionar sus especificaciones técnicas y el principio físico que rige su funcionamiento.
+        </p>
+      </div>
+
+      <div class="rocket-diagram-box glass-panel">
+        <div class="rocket-svg-container">
+          <!-- Vector Illustration of Blue Launch Rocket -->
+          <svg width="220" height="420" viewBox="0 0 100 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Satellite Payload / Nose Cone -->
+            <path d="M50 10 L68 55 L32 55 Z" fill="#D4AF37" stroke="#FFFFFF" stroke-width="1.5" />
+            <!-- Circuit Tree Logo Decal -->
+            <circle cx="50" cy="38" r="4" fill="#0D183E" />
+            <line x1="50" y1="38" x2="50" y2="50" stroke="#0D183E" stroke-width="1.5" />
+            <!-- Avionics Bay -->
+            <rect x="32" y="55" width="36" height="25" fill="#1E3A8A" stroke="#D4AF37" stroke-width="1" />
+            <text x="50" y="70" font-size="5" fill="#FFFFFF" text-anchor="middle" font-family="monospace">IMU / AVIONICS</text>
+            <!-- Propellant Tanks -->
+            <rect x="30" y="80" width="40" height="85" rx="3" fill="#FFFFFF" stroke="#0D183E" stroke-width="1.5" />
+            <rect x="30" y="105" width="40" height="8" fill="#0D183E" />
+            <text x="50" y="111" font-size="4.5" fill="#D4AF37" text-anchor="middle" font-family="sans-serif" font-weight="bold">BLUE LAUNCH</text>
+            <!-- Helium Pressurization -->
+            <circle cx="50" cy="135" r="9" fill="#E2E8F0" stroke="#38BDF8" stroke-width="1" />
+            <text x="50" y="137" font-size="4" fill="#0D183E" text-anchor="middle">He</text>
+            <!-- Fins -->
+            <path d="M30 165 L10 195 L30 190 Z" fill="#0D183E" stroke="#D4AF37" stroke-width="1" />
+            <path d="M70 165 L90 195 L70 190 Z" fill="#0D183E" stroke="#D4AF37" stroke-width="1" />
+            <!-- De Laval Engine & Nozzle -->
+            <path d="M38 165 L62 165 L66 185 L34 185 Z" fill="#475569" stroke="#94A3B8" stroke-width="1" />
+            <path d="M36 185 L64 185 L70 205 L30 205 Z" fill="#334155" stroke="#D4AF37" stroke-width="1.5" />
+            <!-- Flame Plume -->
+            <path d="M40 205 Q50 235 50 235 Q50 235 60 205 Z" fill="#F59E0B" opacity="0.8" />
+          </svg>
+        </div>
+
+        <div class="anatomy-hotspot-list">
+          <div class="hotspot-card active" data-title="1. Módulo de Carga Útil & Micro-Satélite" data-specs="Dimensiones: CubeSat 3U | Masa: 4.2 kg | Enlace: Banda S (2.4 GHz) con telemetría en tiempo real." data-physics="Segunda Ley de Newton y Gravitación Universal. Liberación en el apogeo suborbital a gravedad efectiva reducida.">
+            <div class="hotspot-title">🛰️ Carga Útil & Satélite Blue Launch</div>
+            <div class="hotspot-desc">Ubicado en la cofia aerodinámica dorada; transporta instrumentación científica.</div>
+          </div>
+
+          <div class="hotspot-card" data-title="2. Bahía de Aviónica & Sensores IMU" data-specs="Frecuencia de muestreo: 200 Hz | Acelerómetros triaxiales, giróscopos y altímetro barométrico redundante." data-physics="Medición directa de a(t), v(t) e integración numérica en tiempo real para verificar F = ma.">
+            <div class="hotspot-title">🧠 Sistema de Guía, Navegación y Control (GNC)</div>
+            <div class="hotspot-desc">Computadora de vuelo con telemetría digital en órbita.</div>
+          </div>
+
+          <div class="hotspot-card" data-title="3. Tanques de Combustible & Oxidante" data-specs="Material: Fibra de carbono con liner de aluminio | Propelente: LOX / Metano líquido | Presión: 28 bar." data-physics="Sistemas de masa variable: El vaciado continuo del tanque incrementa la relación empuje-peso (T/W).">
+            <div class="hotspot-title">⛽ Tanques Criogénicos de Propelente</div>
+            <div class="hotspot-desc">Almacenamiento de propelentes de alta densidad energética y bajo impacto ambiental.</div>
+          </div>
+
+          <div class="hotspot-card" data-title="4. Aletas de Estabilización Aerodinámica" data-specs="Perfil: NACA 0009 de titanio grado aeroespacial | Área efectiva: 0.18 m² por aleta." data-physics="Estabilidad pasiva por momento restaurador: Centro de Presión (CP) ubicado detrás del Centro de Masa (CM).">
+            <div class="hotspot-title">📐 Aletas Estabilizadoras de Titanio</div>
+            <div class="hotspot-desc">Garantizan la trayectoria vertical suprimiendo perturbaciones de guiñada y cabeceo.</div>
+          </div>
+
+          <div class="hotspot-card" data-title="5. Cámara de Combustión & Tobera de Laval" data-specs="Presión de cámara: 45 bar | Razón de expansión: 14:1 | Eficiencia térmica: 94.2%." data-physics="Tercera Ley de Newton y Ecuación de Tsiolkovsky: Expansión termodinámica de gases a régimen supersónico.">
+            <div class="hotspot-title">🔥 Motor Cohete con Tobera De Laval</div>
+            <div class="hotspot-desc">Genera los 18,500 N de empuje por eyección de masa a velocidad supersónica.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Mission Terminal Console -->
+      <div class="terminal-wrapper">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <div class="terminal-dot dot-red"></div>
+            <div class="terminal-dot dot-yellow"></div>
+            <div class="terminal-dot dot-green"></div>
+          </div>
+          <div class="terminal-title">ROCKET-TEC-TELEMETRY-OS v2.4 // BLUE LAUNCH TERMINAL</div>
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; color: #10B981;">ONLINE</div>
+        </div>
+        <div id="terminal-body" class="terminal-body">
+          <div>[SISTEMA] Conectado a la telemetría del proyecto final F1025...</div>
+          <div>[AYUDA] Escribe <code>help</code> o haz clic en los accesos rápidos inferiores para ejecutar comandos.</div>
+        </div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt">&gt;</span>
+          <input type="text" id="terminal-input" class="terminal-input" placeholder="Escribe un comando (status, telemetry, laws, launch, team)..." autocomplete="off">
+        </div>
+        <div class="terminal-shortcuts">
+          <span style="font-size: 0.75rem; color: var(--color-slate-400); margin-right: 0.5rem;">Comandos Rápidos:</span>
+          <button class="terminal-badge-btn" data-cmd="status">status</button>
+          <button class="terminal-badge-btn" data-cmd="telemetry">telemetry</button>
+          <button class="terminal-badge-btn" data-cmd="laws">laws</button>
+          <button class="terminal-badge-btn" data-cmd="tsiolkovsky">tsiolkovsky</button>
+          <button class="terminal-badge-btn" data-cmd="launch">launch</button>
+          <button class="terminal-badge-btn" data-cmd="team">team</button>
+          <button class="terminal-badge-btn" data-cmd="clear">clear</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       IDENTIDAD VISUAL (BLUE LAUNCH & ROCKET TEC SINALOA)
+       ========================================================================== -->
+  <section id="identidad" class="identity-section">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-tag">BRANDING OFICIAL & MANUAL DE IDENTIDAD</div>
+        <h2 class="section-title">Identidad Visual Blue Launch</h2>
+        <p class="section-description">
+          Kit oficial de logotipos, colores institucionales y simbología del equipo <strong>Rocket Tec Sinaloa</strong>.
+        </p>
+      </div>
+
+      <div class="identity-grid">
+        <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
+          <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--color-gold);">
+            Póster Oficial de Identidad
+          </h3>
+          <img src="assets/poster-identidad-web.jpg" id="poster-preview-btn" alt="Póster Identidad Rocket Tec" class="identity-poster-preview" title="Haz clic para ver en alta resolución">
+          <p style="font-size: 0.8rem; color: var(--color-slate-400); margin-top: 0.75rem;">
+            🔍 Haz clic sobre la imagen para expandir el manual de identidad completo
+          </p>
+        </div>
+
+        <div class="glass-panel" style="padding: 2rem;">
+          <h3 style="font-size: 1.3rem; margin-bottom: 1rem;">Simbología del Emblema</h3>
+          <p style="color: var(--color-slate-300); font-size: 0.95rem; margin-bottom: 1rem;">
+            El imagotipo de <strong>Blue Launch</strong> fusiona el arraigo territorial con la visión tecnológica y aeroespacial:
+          </p>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.9rem; color: var(--color-slate-300);">
+            <li><strong class="text-gold">🌲 Árbol de Circuitos:</strong> Representa el crecimiento orgánico, la innovación digital y la integración de microelectrónica nacida en Sinaloa.</li>
+            <li><strong class="text-gold">🛰️ Satélite en Órbita:</strong> Símbolo del objetivo de misión: alcanzar el espacio y mantener conectividad telemétrica constante.</li>
+            <li><strong class="text-gold">⛰️ Cumbres Doradas:</strong> Geometría piramidal que simboliza la perseverancia, superación y el pico de rendimiento científico.</li>
+          </ul>
+
+          <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--color-gold);">
+            Paleta de Colores Oficial
+          </h4>
+          <div class="palette-swatches">
+            <div class="swatch-card" style="background: rgba(13, 24, 62, 0.9);">
+              <div class="swatch-color" style="background: #0D183E; border: 1px solid rgba(255,255,255,0.2);"></div>
+              <div class="swatch-name">Azul Profundo</div>
+              <div class="swatch-hex">#0D183E</div>
+            </div>
+            <div class="swatch-card" style="background: rgba(13, 24, 62, 0.9);">
+              <div class="swatch-color" style="background: #D4AF37;"></div>
+              <div class="swatch-name text-gold">Oro Launch</div>
+              <div class="swatch-hex">#D4AF37</div>
+            </div>
+            <div class="swatch-card" style="background: rgba(13, 24, 62, 0.9);">
+              <div class="swatch-color" style="background: #FFFFFF;"></div>
+              <div class="swatch-name" style="color: #FFFFFF;">Blanco Espacial</div>
+              <div class="swatch-hex">#FFFFFF</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       EQUIPO BLUE LAUNCH (ROCKET TEC SINALOA)
+       ========================================================================== -->
+  <section id="equipo" class="team-section">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-tag">TALENTO & COLABORACIÓN</div>
+        <h2 class="section-title">Equipo de Proyecto Rocket Tec Sinaloa</h2>
+        <p class="section-description">
+          Estudiantes de ingeniería apasionados por la física, el cómputo científico y la exploración espacial.
+        </p>
+      </div>
+
+      <div class="team-grid">
+        <div class="team-card glass-panel">
+          <div class="team-avatar-box">🚀</div>
+          <div class="team-role">Líder de Misión</div>
+          <h3 class="team-name">Dirección & Modelación</h3>
+          <p class="team-bio">
+            Coordinación general del proyecto integrador, formulación analítica de las leyes de Newton y validación matemática de Tsiolkovsky.
+          </p>
+        </div>
+
+        <div class="team-card glass-panel">
+          <div class="team-avatar-box">🔥</div>
+          <div class="team-role">Ingeniería Térmica</div>
+          <h3 class="team-name">Propulsión & Toberas</h3>
+          <p class="team-bio">
+            Diseño termodinámico de la cámara de combustión, cálculo de velocidades de eyección de gases y balances de masa variable.
+          </p>
+        </div>
+
+        <div class="team-card glass-panel">
+          <div class="team-avatar-box">💻</div>
+          <div class="team-role">Software de Vuelo</div>
+          <h3 class="team-name">Telemetría & Simulación</h3>
+          <p class="team-bio">
+            Desarrollo de los algoritmos de integración numérica (Runge-Kutta), interfaz web interactiva y visualización de datos en tiempo real.
+          </p>
+        </div>
+
+        <div class="team-card glass-panel">
+          <div class="team-avatar-box">📐</div>
+          <div class="team-role">Estructuras & Aerodinámica</div>
+          <h3 class="team-name">Balística & Energía</h3>
+          <p class="team-bio">
+            Cálculo del centro de presiones y masas, estimación del coeficiente de arrastre aerodinámico y balances de conservación energética.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       ENTREGABLES & GITHUB PAGES HUB
+       ========================================================================== -->
+  <section id="entregables" class="deliverables-section">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-tag">ENTREGA DEL PROYECTO FINAL</div>
+        <h2 class="section-title">Repositorio de Entregables F1025</h2>
+        <p class="section-description">
+          Accede y descarga todos los recursos del proyecto preparados para su evaluación y publicación en <strong>GitHub Pages</strong>.
+        </p>
+      </div>
+
+      <div class="deliverables-grid">
+        <!-- ZIP Package -->
+        <div class="deliverable-card glass-panel border-gold">
+          <div>
+            <div class="deliverable-icon">📦</div>
+            <h3 class="deliverable-title text-gold">Paquete GitHub Pages (.ZIP)</h3>
+            <p class="deliverable-desc">
+              Archivo comprimido con la estructura lista para subir a GitHub: <code>index.html</code>, <code>style.css</code>, <code>script.js</code>, carpeta de <code>assets/</code> y guía paso a paso.
+            </p>
+          </div>
+          <button id="btn-download-zip" class="btn btn-gold" style="width: 100%;">
+            ⬇️ Descargar Paquete (.zip)
+          </button>
+        </div>
+
+        <!-- Technical Report -->
+        <div class="deliverable-card glass-panel">
+          <div>
+            <div class="deliverable-icon">📑</div>
+            <h3 class="deliverable-title">Reporte Técnico F1025</h3>
+            <p class="deliverable-desc">
+              Memoria de cálculo y reporte formal en formato científico con el desarrollo riguroso de las ecuaciones de movimiento y conservación.
+            </p>
+          </div>
+          <button id="btn-view-report" class="btn btn-outline" style="width: 100%;">
+            👁️ Leer Reporte Técnico
+          </button>
+        </div>
+
+        <!-- Python Script -->
+        <div class="deliverable-card glass-panel">
+          <div>
+            <div class="deliverable-icon">🐍</div>
+            <h3 class="deliverable-title">Simulador en Python</h3>
+            <p class="deliverable-desc">
+              Script con integración numérica de Euler-Cromer y SciPy ODE para análisis comparativo de trayectorias atmosféricas.
+            </p>
+          </div>
+          <a href="data:text/plain;charset=utf-8,#%20BLUE%20LAUNCH%20-%20Simulador%20Fisica%20F1025%0Aimport%20numpy%20as%20np%0A%0Adef%20simular_cohete(T%3D18500%2C%20m_dry%3D120%2C%20m_fuel%3D400%2C%20m_dot%3D15)%3A%0A%20%20%20%20g0%20%3D%209.81%0A%20%20%20%20ve%20%3D%20T%20/%20m_dot%0A%20%20%20%20delta_v%20%3D%20ve%20*%20np.log((m_dry%20%2B%20m_fuel)%20/%20m_dry)%0A%20%20%20%20print(f'Delta-V%20de%20Tsiolkovsky%3A%20%7Bdelta_v%3A.2f%7D%20m/s')%0A%20%20%20%20return%20delta_v%0A%0Aif%20__name__%20%3D%3D%20'__main__' %3A%0A%20%20%20%20simular_cohete()" download="simulador_blue_launch_f1025.py" class="btn btn-outline" style="width: 100%;">
+            ⬇️ Descargar Código Python
+          </a>
+        </div>
+
+        <!-- Telemetry Data -->
+        <div class="deliverable-card glass-panel">
+          <div>
+            <div class="deliverable-icon">📊</div>
+            <h3 class="deliverable-title">Dataset Telemetría (CSV)</h3>
+            <p class="deliverable-desc">
+              Datos tabulares del vuelo de prueba: tiempo (s), altitud (m), velocidad (m/s), aceleración (m/s²) y masa de combustible (kg).
+            </p>
+          </div>
+          <a href="data:text/csv;charset=utf-8,tiempo_s%2Caltitud_m%2Cvelocidad_ms%2Caceleracion_ms2%2Ccombustible_kg%0A0%2C0%2C0%2C25.7%2C400%0A5%2C320%2C130%2C28.2%2C325%0A10%2C1280%2C278%2C31.5%2C250%0A15%2C3150%2C445%2C36.1%2C175%0A20%2C5890%2C640%2C42.8%2C100%0A25%2C9800%2C880%2C52.4%2C25%0A26.7%2C11340%2C975%2C0%2C0%0A60%2C48500%2C650%2C-9.6%2C0%0A120%2C124800%2C0%2C-9.4%2C0" download="telemetria_vuelo_f1025.csv" class="btn btn-outline" style="width: 100%;">
+            ⬇️ Descargar CSV
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       MODALS
+       ========================================================================== -->
+  <!-- Poster Modal -->
+  <div id="poster-modal" class="modal-backdrop">
+    <div class="modal-content">
+      <button class="modal-close-btn">&times;</button>
+      <h3 style="color: var(--color-gold); margin-bottom: 1rem;">Manual Oficial de Identidad Visual - Rocket Tec Sinaloa</h3>
+      <img src="assets/poster-identidad-hd.jpg" alt="Poster HD" style="width: 100%; height: auto; border-radius: 0.5rem; border: 1px solid var(--color-gold);">
+    </div>
+  </div>
+
+  <!-- Anatomy Info Modal -->
+  <div id="anatomy-modal" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 600px;">
+      <button class="modal-close-btn">&times;</button>
+      <h3 id="anatomy-modal-title" style="color: var(--color-gold); margin-bottom: 1rem;">Detalle del Componente</h3>
+      <div id="anatomy-modal-body"></div>
+    </div>
+  </div>
+
+  
+  <!-- ZIP Download Modal -->
+  <div id="zip-modal" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 650px;">
+      <button class="modal-close-btn">&times;</button>
+      <h3 style="color: var(--color-gold); margin-bottom: 0.75rem;">📦 Paquete Completo para GitHub Pages</h3>
+      <p style="color: var(--color-slate-300); margin-bottom: 1rem; line-height: 1.6;">
+        El archivo comprimido <strong>blue-launch-f1025-github-pages.zip</strong> contiene la estructura completa lista para publicar en GitHub Pages:
+      </p>
+      <ul style="color: var(--color-slate-300); font-size: 0.9rem; line-height: 1.8; margin-bottom: 1.25rem; padding-left: 1.5rem;">
+        <li><code>index.html</code> — Estructura principal con diseño responsive</li>
+        <li><code>style.css</code> — Paleta oficial Blue Launch (#0D183E, #D4AF37, #FFFFFF)</li>
+        <li><code>script.js</code> — Motor Web Audio API, simulador físico F1025 y cuenta regresiva</li>
+        <li><code>assets/</code> — Logotipo horizontal, emblema circular y póster oficial de identidad</li>
+        <li><code>README.md</code> — Guía paso a paso para desplegar en GitHub Pages en 3 minutos</li>
+      </ul>
+      <div style="background: rgba(7, 11, 25, 0.85); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--color-border); font-size: 0.85rem; color: var(--color-gold-light);">
+        💡 Puedes descargar el archivo ZIP directamente desde el archivo descargable adjunto en la conversación.
+      </div>
+    </div>
+  </div>
+
+  <!-- Technical Report Modal -->
+  <div id="report-modal" class="modal-backdrop">
+    <div class="modal-content">
+      <button class="modal-close-btn">&times;</button>
+      <h2 style="color: var(--color-gold); margin-bottom: 0.5rem;">Reporte Técnico F1025</h2>
+      <p style="font-size: 0.85rem; color: var(--color-slate-400); margin-bottom: 1.5rem;">
+        Materia: F1025 Leyes del Movimiento y Conservación | Equipo: Blue Launch - Rocket Tec Sinaloa
+      </p>
+
+      <div style="color: var(--color-slate-300); line-height: 1.7; font-size: 0.95rem; display: flex; flex-direction: column; gap: 1rem;">
+        <h4 style="color: var(--color-white); border-bottom: 1px solid var(--color-border); padding-bottom: 0.3rem;">1. Resumen Ejecutivo</h4>
+        <p>
+          El presente proyecto presenta el diseño analítico y la simulación numérica del perfil de vuelo del cohete suborbital <strong>Blue Launch</strong>. Se analizan cuantitativamente las etapas de ascenso propulsado, apagado de motores (MECO), trayectoria balística exoatmosférica y apogeo de 124.8 km sobre el nivel del mar.
+        </p>
+
+        <h4 style="color: var(--color-white); border-bottom: 1px solid var(--color-border); padding-bottom: 0.3rem;">2. Formulación Matemática de Masa Variable</h4>
+        <p>
+          A diferencia de partículas puntuales clásicas con masa invariante, la dinámica de un cohete obedece a un sistema abierto con transferencia continua de masa:
+        </p>
+        <div style="background: rgba(7, 11, 25, 0.9); padding: 0.75rem; border-radius: 0.5rem; font-family: var(--font-mono); color: var(--color-gold);">
+          m(t) &middot; (dv/dt) = T(t) - &frac12;&rho;(h)v&sup2;C<sub>d</sub>A - m(t)g(h)
+        </div>
+        <p>
+          Donde <code>T(t) = &dot;m &middot; v<sub>e</sub> + (p<sub>e</sub> - p<sub>a</sub>)A<sub>e</sub></code> representa el empuje efectivo.
+        </p>
+
+        <h4 style="color: var(--color-white); border-bottom: 1px solid var(--color-border); padding-bottom: 0.3rem;">3. Conservación del Momentum e Integración de Tsiolkovsky</h4>
+        <p>
+          Despreciando transitoriamente la gravedad y el arrastre en el límite diferencial:
+          <code>m &middot; dv = -v<sub>e</sub> &middot; dm &rArr; &int; dv = -v<sub>e</sub> &int; (dm / m) &rArr; &Delta;v = v<sub>e</sub> &middot; ln(m<sub>0</sub> / m<sub>f</sub>)</code>.
+          Con una masa inicial m<sub>0</sub> = 520 kg y masa seca m<sub>f</sub> = 120 kg, el cohete genera un &Delta;v teórico de <strong>2,790 m/s</strong>, suficiente para rebasar la línea de Kármán con amplio margen de seguridad.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <img src="assets/logo-horizontal.jpg" alt="Blue Launch" class="footer-logo">
+      <p style="margin-bottom: 0.5rem;">
+        <strong>Blue Launch • Aerospace & Tech</strong> | Rocket Tec Sinaloa
+      </p>
+      <p style="font-size: 0.85rem; color: var(--color-slate-400);">
+        Proyecto Final Integrador para la materia de <strong>F1025 Leyes del Movimiento y Conservación</strong>.
+      </p>
+      <p style="font-size: 0.8rem; color: var(--color-slate-400); margin-top: 1rem;">
+        Diseñado para publicación inmediata en <strong>GitHub Pages</strong> • Noviembre 2026
+      </p>
+    </div>
+  </footer>
+
+  <!-- Script -->
+  <script src="script.js"></script>
+</body>
+</html>
